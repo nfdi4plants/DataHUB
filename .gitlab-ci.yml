@@ -20,4 +20,4 @@ publish:
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - docker push $TAG_COMMIT
     - docker push $TAG_LATEST
-    - docker push TAG_DATE
+    - docker push $TAG_DATE
