@@ -6,6 +6,7 @@ variables:
   #TAG_COMMIT: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA
   TAG_LATEST: $CI_REGISTRY_IMAGE:latest
   TAG_COMMIT: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  TAG_DATE: $CI_REGISTRY_IMAGE:CI_COMMIT_TIMESTAMP
 #  GIT_SUBMODULE_STRATEGY: recursive
 
 publish:
@@ -19,3 +20,4 @@ publish:
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - docker push $TAG_COMMIT
     - docker push $TAG_LATEST
+    - docker push TAG_DATE
