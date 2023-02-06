@@ -1,5 +1,6 @@
 stages:
   - publish
+  - publish-release
 
 variables:
   #TAG_LATEST: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:latest
@@ -16,8 +17,22 @@ publish:
     - docker:dind
   script:
     - ls -lah
+    - echo TAG_COMMIT
+    - echo TAG_DATE
     - docker build -t $TAG_COMMIT -t $TAG_LATEST .
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - docker push $TAG_COMMIT
     - docker push $TAG_LATEST
-    - docker push $TAG_DATE
+
+
+publish-release:
+  only:
+    - release
+  image: docker:latest
+  stage: publish-release
+  services:
+    - docker:dind
+  script:
+    - docker build -t $TAG_COMMIT -t $TAG_LATEST .
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE:CI_COMMIT_TAG
