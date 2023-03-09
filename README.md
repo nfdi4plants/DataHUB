@@ -9,6 +9,8 @@ In the future we plan to release a ready-to-use docker-compose.yml file but here
 Note that currently the `data` folder in the current directory will be used to mount volumes for different aspects of the configuration & the data.
 This will be changed to some external, configurable mount point in the future. As it is the state is saved within `./data` to facilitate testing and upgrade, while keeping the application state.
 
+The login configuration currently requires a nfdi4plants OIDC client id and secret to use the central DataPLANT login infrastructure. You can also login using the `root` account which credentials are to be specified in the `docker-compose.yml` file.
+
 ```
 version: '3.9'
 
@@ -26,7 +28,6 @@ services:
 			gitlab_rails['omniauth_auto_link_user'] = ['openid_connect']
 			gitlab_rails['omniauth_sync_email_from_provider'] = 'openid_connect'
 			gitlab_rails['omniauth_sync_profile_from_provider'] = ['openid_connect']
-			gitlab_rails['omniauth_auto_sign_in_with_provider'] = 'openid_connect'
 			gitlab_rails['omniauth_block_auto_created_users'] = false
 			gitlab_rails['omniauth_providers'] = [
 				{
