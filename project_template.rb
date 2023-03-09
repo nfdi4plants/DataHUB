@@ -53,7 +53,7 @@ module Gitlab
       # rubocop:disable Metrics/AbcSize
       def localized_templates_table
         [
-          ProjectTemplate.new('dataplant-arc', 'ARC', _('Includes DataPLANT ARC structure'), 'https://gitlab.com/gitlab-org/project-templates/rails', '/assets/dataplant-arc.png'),
+          ProjectTemplate.new('arc', 'ARC', _('Includes DataPLANT ARC structure'), 'https://gitlab.com/gitlab-org/project-templates/rails', '/assets/dataplant-arc.png'),
           ProjectTemplate.new('rails', 'Ruby on Rails', _('Includes an MVC structure, Gemfile, Rakefile, along with many others, to help you get started'), 'https://gitlab.com/gitlab-org/project-templates/rails', 'illustrations/logos/rails.svg'),
           ProjectTemplate.new('spring', 'Spring', _('Includes an MVC structure, mvnw and pom.xml to help you get started'), 'https://gitlab.com/gitlab-org/project-templates/spring', 'illustrations/logos/spring.svg'),
           ProjectTemplate.new('express', 'NodeJS Express', _('Includes an MVC structure to help you get started'), 'https://gitlab.com/gitlab-org/project-templates/express', 'illustrations/logos/express.svg'),
