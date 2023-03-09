@@ -23,7 +23,7 @@ services:
 			external_url 'https://<datahub_hostname>'
 			letsencrypt['enable'] = true
 			gitlab_rails['initial_root_password'] = '<root_password>'
-    		gitlab_rails['omniauth_enabled'] = true
+			gitlab_rails['omniauth_enabled'] = true
 			gitlab_rails['omniauth_allow_single_sign_on'] = ['openid_connect']
 			gitlab_rails['omniauth_auto_link_user'] = ['openid_connect']
 			gitlab_rails['omniauth_sync_email_from_provider'] = 'openid_connect'
