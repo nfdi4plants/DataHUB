@@ -32,7 +32,7 @@ services:
 			gitlab_rails['omniauth_providers'] = [
 				{
 					'name' => 'openid_connect',
-					'label' => 'keycloak-dev',
+					'label' => 'dataplant-login',
 					'args' => {
 						'name' => 'openid_connect',
 						'scope' => ['openid','profile','email'],
