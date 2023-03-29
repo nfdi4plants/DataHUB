@@ -1,7 +1,3 @@
-# nfdi4plants DataHub
-
-This is a development repository for the nfdi4plants DataHUB service.
-
 # Test Deployment
 
 In the future we plan to release a ready-to-use docker-compose.yml file but here is a first draft of a basic setup using the DataHUB image:
