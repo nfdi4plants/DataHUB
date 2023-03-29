@@ -7,6 +7,27 @@ This will be changed to some external, configurable mount point in the future. A
 
 The login configuration currently requires a nfdi4plants OIDC client id and secret to use the central DataPLANT login infrastructure. You can also login using the `root` account which credentials are to be specified in the `docker-compose.yml` file.
 
+Initial steps to create your own DataPLANT-backed DataHUB include the following:
+
+1. **Specification of the hostname**  
+*(described below as <datahub_hostname>)*  
+  
+	* The hostname should be resolvable Internet-wide (?)
+	* The hostname should already have a DNS entry
+
+2. **Specification of the Sign-In Credentials**  
+*(in the following described as <nfdi4plants oidc client id>)*
+
+	* Request credentials from the <a href=&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#115;&#121;&#115;&#111;&#112;&#115;&#64;&#110;&#102;&#100;&#105;&#52;&#112;&#108;&#97;&#110;&#116;&#115;&#46;&#111;&#114;&#103;>DataHUB team</a>, indicating the used hostname. 
+
+3. **Using docker-compose.yml**
+	* Replace <datahub_hostname> with the used hostname
+	* Replace <nfdi4plants oidc client id> with the credentials requested from the DataHUB team.
+
+If you encounter any issues during the deployment process, please report them [here](https://github.com/nfdi4plants/DataHUB/issues).   
+If you need personal support, please contact us directly via 
+<a href=&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#115;&#121;&#115;&#111;&#112;&#115;&#64;&#110;&#102;&#100;&#105;&#52;&#112;&#108;&#97;&#110;&#116;&#115;&#46;&#111;&#114;&#103;>mail</a>
+
 ```
 version: '3.9'
 
