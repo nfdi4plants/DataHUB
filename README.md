@@ -13,7 +13,6 @@ Initial steps to create your own DataPLANT-backed DataHUB include the following:
 *(described below as <datahub_hostname>)*  
   
 	* The hostname should be resolvable Internet-wide (?)
-	* The hostname should already have a DNS entry
 
 2. **Specification of the Sign-In Credentials**  
 *(in the following described as <nfdi4plants oidc client id>)*
