@@ -1,12 +1,12 @@
-FROM gitlab/gitlab-ee:latest
+ARG VERSION=latest
+FROM gitlab/gitlab-ee:$VERSION
 
-#COPY --from=ubuntu /etc/os-release /
-COPY _head.html.haml /opt/gitlab/embedded/service/gitlab-rails/app/views/explore/
-COPY _default.html.haml /opt/gitlab/embedded/service/gitlab-rails/app/views/layouts/header/
-COPY project_template.rb /opt/gitlab/embedded/service/gitlab-rails/lib/gitlab/
-COPY pages.projects.new.5b691961.chunk.js.gz /opt/gitlab/embedded/service/gitlab-rails/public/assets/webpack/
-COPY pages.projects.new.5b691961.chunk.js.map.gz /opt/gitlab/embedded/service/gitlab-rails/public/assets/webpack/
+ARG VERSION
+COPY ${VERSION} /patches
+RUN for p in /patches/*; do patch -p0 < $p; done
+
 COPY arc.tar.gz /opt/gitlab/embedded/service/gitlab-rails/vendor/project_templates/
-COPY house-solid.svg /opt/gitlab/embedded/service/gitlab-rails/public/assets/
-COPY dataplant-arc.png /opt/gitlab/embedded/service/gitlab-rails/public/assets/
-COPY lfs_token.rb /opt/gitlab/embedded/service/gitlab-rails/lib/gitlab/
+COPY dataplant-arc.png house-solid.svg /opt/gitlab/embedded/service/gitlab-rails/public/assets/
+
+#COPY pages.projects.new.5b691961.chunk.js.gz /opt/gitlab/embedded/service/gitlab-rails/public/assets/webpack/
+#COPY pages.projects.new.5b691961.chunk.js.map.gz /opt/gitlab/embedded/service/gitlab-rails/public/assets/webpack/
