@@ -2,7 +2,7 @@ ARG VERSION=latest
 FROM gitlab/gitlab-ee:$VERSION
 
 ARG VERSION
-COPY ${VERSION} /patches
+COPY patches/${VERSION} /patches
 RUN for p in /patches/*; do patch -p0 < $p; done
 
 COPY arc.tar.gz /opt/gitlab/embedded/service/gitlab-rails/vendor/project_templates/
