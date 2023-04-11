@@ -33,46 +33,46 @@ version: '3.9'
 services:
   web:
     image: ghcr.io/nfdi4plants/datahub:main
-  restart: always
-  environment:
-    GITLAB_OMNIBUS_CONFIG: |
-      external_url 'https://<datahub_hostname>'
-      letsencrypt['enable'] = true
-      gitlab_rails['initial_root_password'] = '<root_password>'
-      gitlab_rails['omniauth_enabled'] = true
-      gitlab_rails['omniauth_allow_single_sign_on'] = ['openid_connect']
-      gitlab_rails['omniauth_auto_link_user'] = ['openid_connect']
-      gitlab_rails['omniauth_sync_email_from_provider'] = 'openid_connect'
-      gitlab_rails['omniauth_sync_profile_from_provider'] = ['openid_connect']
-      gitlab_rails['omniauth_block_auto_created_users'] = false
-      gitlab_rails['omniauth_providers'] = [
-        {
-          'name' => 'openid_connect',
-          'label' => 'dataplant-login',
-          'args' => {
+    restart: always
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://<datahub_hostname>'
+        letsencrypt['enable'] = true
+        gitlab_rails['initial_root_password'] = '<root_password>'
+        gitlab_rails['omniauth_enabled'] = true
+        gitlab_rails['omniauth_allow_single_sign_on'] = ['openid_connect']
+        gitlab_rails['omniauth_auto_link_user'] = ['openid_connect']
+        gitlab_rails['omniauth_sync_email_from_provider'] = 'openid_connect'
+        gitlab_rails['omniauth_sync_profile_from_provider'] = ['openid_connect']
+        gitlab_rails['omniauth_block_auto_created_users'] = false
+        gitlab_rails['omniauth_providers'] = [
+          {
             'name' => 'openid_connect',
-            'scope' => ['openid','profile','email'],
-            'response_type' => 'code',
-            'issuer' => 'https://auth.nfdi4plants.org/realms/dataplant',
-            'discovery' => true,
-            'client_auth_method' => 'query',
-            'uid_field' => 'sub',
-            'send_scope_to_token_endpoint' => 'true',
-              'client_options' => {
-                'identifier' => '<nfdi4plants oidc client id>',
-                'secret' => '<nfdi4plants oidc client secret>',
-                'redirect_uri' => 'https://<datahub_hostname>/users/auth/openid_connect/callback',
-                'end_session_endpoint' => 'https://auth.nfdi4plants.org/realms/dataplant/protocol/openid-connect/logout'
+            'label' => 'dataplant-login',
+            'args' => {
+              'name' => 'openid_connect',
+              'scope' => ['openid','profile','email'],
+              'response_type' => 'code',
+              'issuer' => 'https://auth.nfdi4plants.org/realms/dataplant',
+              'discovery' => true,
+              'client_auth_method' => 'query',
+              'uid_field' => 'sub',
+              'send_scope_to_token_endpoint' => 'true',
+                'client_options' => {
+                  'identifier' => '<nfdi4plants oidc client id>',
+                  'secret' => '<nfdi4plants oidc client secret>',
+                  'redirect_uri' => 'https://<datahub_hostname>/users/auth/openid_connect/callback',
+                  'end_session_endpoint' => 'https://auth.nfdi4plants.org/realms/dataplant/protocol/openid-connect/logout'
+                }
               }
-            }
-        }
-      ]       
-  ports:
-    - '0.0.0.0:443:443'
-    - '0.0.0.0:22:22'
-  volumes:
-    - ./data/config:/etc/gitlab
-    - ./data/logs:/var/log/gitlab
-    - ./data/gitlab:/var/opt/gitlab
-  shm_size: '256m'
+          }
+        ]       
+    ports:
+      - '0.0.0.0:443:443'
+      - '0.0.0.0:22:22'
+    volumes:
+      - ./data/config:/etc/gitlab
+      - ./data/logs:/var/log/gitlab
+      - ./data/gitlab:/var/opt/gitlab
+    shm_size: '256m'
 ```
