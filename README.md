@@ -60,7 +60,7 @@ services:
             'send_scope_to_token_endpoint' => 'true',
               'client_options' => {
                 'identifier' => '<nfdi4plants oidc client id>',
-                'secret' => '<nfdi4plants oidc client id>',
+                'secret' => '<nfdi4plants oidc client secret>',
                 'redirect_uri' => 'https://<datahub_hostname>/users/auth/openid_connect/callback',
                 'end_session_endpoint' => 'https://auth.nfdi4plants.org/realms/dataplant/protocol/openid-connect/logout'
               }
