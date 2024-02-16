@@ -76,3 +76,9 @@ services:
       - ./data/gitlab:/var/opt/gitlab
     shm_size: '256m'
 ```
+
+## GitLab Community Edition (CE) and Enterprise Edition (EE)
+
+We chose to use the Enterprise Edition of GitLab because it provides the most easy
+upgrade path to a non free version of GitLab if desired, and is therefore encouraged.
+It is important to note here, that the Enterprise Edition of GitLab is free and does not requiere a commercial subscription, and "in this case runs using the open source license" [[1]](https://handbook.gitlab.com/handbook/marketing/brand-and-product-marketing/product-and-solution-marketing/tiers/#history-of-ce-and-ee-distributions). The Community and Enterprise Edition of GitLab only refere to software distributuions, and using the one over the other does not indicate that one is paid or unpaid user of GitLab. More information can be found in [The GitLab Handbook](https://handbook.gitlab.com/handbook/marketing/brand-and-product-marketing/product-and-solution-marketing/tiers/).
