@@ -1,7 +1,6 @@
 # DataHUB Test Deployment
 
 In the future we plan to release a ready-to-use docker-compose.yml file but here are some first drafts of a basic setup using the DataHUB image.
-The 
 
 Note that currently the data folder in the current directory will be used to mount volumes for different aspects of the configuration & the data. This will be changed to some external, configurable mount point in the future. As it is the state is saved within ./data to facilitate testing and upgrade, while keeping the application state.
 
