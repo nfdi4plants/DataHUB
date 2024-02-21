@@ -1,9 +1,100 @@
-# Test Deployment
+# DataHUB Test Deployment
 
-In the future we plan to release a ready-to-use docker-compose.yml file but here is a first draft of a basic setup using the DataHUB image:
+In the future we plan to release a ready-to-use docker-compose.yml file but here are some first drafts of a basic setup using the DataHUB image.
 
-Note that currently the `data` folder in the current directory will be used to mount volumes for different aspects of the configuration & the data.
-This will be changed to some external, configurable mount point in the future. As it is the state is saved within `./data` to facilitate testing and upgrade, while keeping the application state.
+Note that currently the data folder in the current directory will be used to mount volumes for different aspects of the configuration & the data. This will be changed to some external, configurable mount point in the future. As it is the state is saved within ./data to facilitate testing and upgrade, while keeping the application state.
+
+## GitLab Community Edition (CE) and Enterprise Edition (EE)
+
+We chose to use the Enterprise Edition of GitLab because it provides the most easy
+upgrade path to a non free version of GitLab if desired, and is therefore encouraged.
+It is important to note here, that the Enterprise Edition of GitLab is free and does not requiere a commercial subscription, and "in this case runs using the open source license" [[1]](https://handbook.gitlab.com/handbook/marketing/brand-and-product-marketing/product-and-solution-marketing/tiers/#history-of-ce-and-ee-distributions). The Community and Enterprise Edition of GitLab only refere to software distributuions, and using the one over the other does not indicate that one is paid or unpaid user of GitLab. More information can be found in [The GitLab Handbook](https://handbook.gitlab.com/handbook/marketing/brand-and-product-marketing/product-and-solution-marketing/tiers/).
+
+## Minimal working Version
+
+```
+version: '3.9'
+
+services:
+  web:
+    image: ghcr.io/nfdi4plants/datahub:main
+    restart: always
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://<datahub_hostname>'
+        letsencrypt['enable'] = true
+        gitlab_rails['initial_root_password'] = '<root_password>'
+    ports:
+      - '0.0.0.0:443:443'              # HTTPS
+      - '0.0.0.0:22:22'                # SSH
+      - '0.0.0.0:80:80'                # HTTP (for letsencrypt)
+    volumes:
+      - ./data/config:/etc/gitlab      # For storing the GitLab configuration files. 
+      - ./data/logs:/var/log/gitlab    # For storing logs. 
+      - ./data/gitlab:/var/opt/gitlab  # For storing application data. 
+    shm_size: '256m'
+```
+
+- **external_url**: Specifies the hostname, replace the spaceholder <datahub_hostname> with the actual hostname of the DataHUB instance. 
+- **gitlab_rails['initial_root_password']**: Specifies the inital root password for the DataHUB instance. Replace <root_password> with an initial root password of the DataHUB instance.
+- **volumes**: Specifies where the data of the DataHUB instance will be stored on the host machine. Follows the form <host_location>:<container_location>, the location inside the contaier can not be changed, the loation on the host machine can be selected at will.
+- **ports** Specifies the port mapping from the host to the container. In the example above, the localhost's HTTPS port (0.0.0.0:443) gets mapped to the port 443 in the container.
+
+## Object Store configuration
+The following configuration will enable object storage for data which supports it.
+This will be GitLab Job artifacts, LFS objects, Uploads, Merge request diffs, Packages (optional), Dependency Proxy (optional), Terraform state files and Pages content. If the object storage should not be used for all the aforementioned data (except the optional ones), object storage must be disabled specifically. For all the data for which the object storage is not disabled, a bucket must be specified.
+
+The example bellow activates object storage only for LFS objects.
+```
+version: "3.9"
+services:
+  gitlab:
+    image: ghcr.io/nfdi4plants/datahub:main
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://<datahub_hostname>'
+        letsencrypt['enable'] = true
+        gitlab_rails['initial_root_password'] = '<root_password>'
+
+        # Consolidated object storage configuration
+        gitlab_rails['object_store']['enabled'] = true
+        #gitlab_rails['object_store']['proxy_download'] = true
+        gitlab_rails['object_store']['connection'] = 
+        {
+          'provider' => 'AWS',
+          'region' => 'fr-repl',
+          'aws_access_key_id' => '<aws_access_key_id>',
+          'aws_secret_access_key' => '<aws_secret_access_key>',
+          'endpoint' => '<endpoint_url>',
+          'enable_signature_v4_streaming' => false,
+          'path_style' => true
+        }
+
+        # Specify the bucket for the LFS objects
+        gitlab_rails['object_store']['objects']['lfs']['bucket'] = '<bucket_name>'
+
+        # disable object storage for everything except LFS objects
+        gitlab_rails['object_store']['objects']['artifacts']['enabled'] = false
+        gitlab_rails['external_diffs_object_store_enabled'] = false
+        gitlab_rails['uploads_object_store_enabled'] = false
+        gitlab_rails['pages_object_store_enabled'] = false
+
+        gitlab_rails['dependency_proxy_enabled'] = false       
+        gitlab_rails['packages_enabled'] = false
+        gitlab_rails['terraform_state_enabled'] = false
+
+    ports:
+      - '0.0.0.0:443:443'              # HTTPS
+      - '0.0.0.0:42:22'                # SSH
+      - '0.0.0.0:80:80'                # HTTP (for letsencrypt)
+    volumes:
+      - ./data/config:/etc/gitlab      # For storing the GitLab configuration files. 
+      - ./data/logs:/var/log/gitlab    # For storing logs. 
+      - ./data/gitlab:/var/opt/gitlab  # For storing application data. 
+    shm_size: '256m'
+```
+
+## Openid Connect configuration
 
 The login configuration currently requires a nfdi4plants OIDC client id and secret to use the central DataPLANT login infrastructure. You can also login using the `root` account which credentials are to be specified in the `docker-compose.yml` file.
 
@@ -68,17 +159,13 @@ services:
           }
         ]       
     ports:
-      - '0.0.0.0:443:443'
-      - '0.0.0.0:22:22'
+      - '0.0.0.0:443:443'              # HTTPS
+      - '0.0.0.0:42:22'                # SSH
+      - '0.0.0.0:80:80'                # HTTP (for letsencrypt)
+
     volumes:
       - ./data/config:/etc/gitlab
       - ./data/logs:/var/log/gitlab
       - ./data/gitlab:/var/opt/gitlab
     shm_size: '256m'
 ```
-
-## GitLab Community Edition (CE) and Enterprise Edition (EE)
-
-We chose to use the Enterprise Edition of GitLab because it provides the most easy
-upgrade path to a non free version of GitLab if desired, and is therefore encouraged.
-It is important to note here, that the Enterprise Edition of GitLab is free and does not requiere a commercial subscription, and "in this case runs using the open source license" [[1]](https://handbook.gitlab.com/handbook/marketing/brand-and-product-marketing/product-and-solution-marketing/tiers/#history-of-ce-and-ee-distributions). The Community and Enterprise Edition of GitLab only refere to software distributuions, and using the one over the other does not indicate that one is paid or unpaid user of GitLab. More information can be found in [The GitLab Handbook](https://handbook.gitlab.com/handbook/marketing/brand-and-product-marketing/product-and-solution-marketing/tiers/).
