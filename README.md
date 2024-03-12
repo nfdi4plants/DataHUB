@@ -4,6 +4,8 @@ In the future we plan to release a ready-to-use docker-compose.yml file but here
 
 Note that currently the data folder in the current directory will be used to mount volumes for different aspects of the configuration & the data. This will be changed to some external, configurable mount point in the future. As it is the state is saved within ./data to facilitate testing and upgrade, while keeping the application state.
 
+For background information on the concept of the DataHUB see our [poster contribution to the 2023 CoRDI conference](https://doi.org/10.5281/zenodo.10021181), for the data publication workflow in conjunction with InvenioRDM see the IWSG conference paper.
+
 ## GitLab Community Edition (CE) and Enterprise Edition (EE)
 
 We chose to use the Enterprise Edition of GitLab because it provides the most easy
@@ -94,7 +96,7 @@ services:
     shm_size: '256m'
 ```
 
-## Openid Connect configuration
+## OpenID Connect configuration
 
 The login configuration currently requires a nfdi4plants OIDC client id and secret to use the central DataPLANT login infrastructure. You can also login using the `root` account which credentials are to be specified in the `docker-compose.yml` file.
 
