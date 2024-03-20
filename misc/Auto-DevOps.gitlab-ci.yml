@@ -1,0 +1,121 @@
+workflow:
+  rules:
+    - if: '$CI_COMMIT_REF_NAME != "cqc"'
+      when: always
+
+image:
+  name: "ghcr.io/nfdi4plants/arc-validate:main"
+
+stages:
+  - arc_json
+  - quality_report_generator
+  - quality_report
+  - generate_metadata
+
+Create ARC JSON:
+  stage: arc_json
+  image: 
+    name: ghcr.io/nfdi4plants/arc-export:main
+    entrypoint: [""]
+  variables:
+    ARC_PATH: .
+  script:
+    - /arc-export -p .
+    - ls -la
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file arc.json "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/isa_arc_json/0.0.1/arc.json"'
+  artifacts:
+    when: always
+    paths:
+      - arc.json
+
+quality_report_generator:
+  stage: quality_report_generator
+  rules:
+    - if: $CI_COMMIT_REF_NAME != "cqc"
+    - exists:
+      - .arc/validation_packages.yml
+  script:
+    - env
+    - apt update
+    - apt install -y yq
+    - |
+      cat << EOF > quality_reports.yml
+      stages:
+        - arc_validation
+        - generate_metadata
+      EOF
+    - |
+      while read -r p v ; do
+        install_command=("arc-validate" "package" "install" "$p")
+        validate_command=("arc-validate" "validate" "-p" "$p")
+        [ "$v" = "null" ] && v=""
+        if [ -n "$v" ]; then
+          install_command+=("-pv" "$v")
+          validate_command+=("-pv" "$v")
+        fi
+
+        cat << EOF >> quality_reports.yml
+      validate-${p}:
+        stage: arc_validation
+        image: "ghcr.io/nfdi4plants/arc-validate:main"
+        script:
+          - ${install_command[@]}
+          - ${validate_command[@]}
+          - ret=$?
+          - mkdir -p "${CI_COMMIT_BRANCH}"
+          - mv ".arc-validate-results/${p}" "${CI_COMMIT_BRANCH}/${p}${v:+@$v}"
+          - ls -la "$CI_COMMIT_BRANCH"/* || true
+          - ls -la "$CI_COMMIT_BRANCH"/*/* || true
+          - exit $ret
+        artifacts:
+          when: always
+          paths:
+            - $CI_COMMIT_BRANCH/*/*.xml
+            - $CI_COMMIT_BRANCH/*/*.svg
+          reports:
+            junit:
+              - $CI_COMMIT_BRANCH/*/*.xml
+          expire_in: 1 hour
+      EOF
+      if [ "$p" = "invenio" ]; then
+        cat << EOF >> quality_reports.yml
+      Publication Metadata:
+        stage: generate_metadata
+        #dependencies:
+        #  - validate-invenio
+        #needs:
+        #  - validate-invenio  
+        image: docker:latest
+        services:
+          - docker:dind
+        variables:
+          DOCKER_HOST: "tcp://docker:2375"
+          DOCKER_TLS_CERTDIR: ''
+          ARC_PATH: .
+        script:
+          - echo "Creating publication metadata..."
+          - docker run --rm -v .:/results -v .:/arc ghcr.io/nfdi4plants/arc-to-invenio:main bash -c "arc-to-invenio -p .; ls -la; cat metadata.json;"
+          - ls -la
+        artifacts:
+          when: always
+          paths:
+            - metadata.json
+      EOF
+      fi
+        cat quality_reports.yml
+      done < <(yq -r '.validation_packages[] | "\(.name) \(.version)"' ${CI_PROJECT_DIR}/.arc/validation_packages.yml )
+  artifacts:
+    when: always
+    paths:
+      - quality_reports.yml
+    expire_in: 1 hour
+
+quality_report:
+  stage: quality_report
+  trigger:
+    include:
+      - artifact: quality_reports.yml
+        job: quality_report_generator
+  rules:
+    - exists:
+      - .arc/validation_packages.yml
