@@ -242,7 +242,7 @@ if [ "$event_type" = "pipeline" ]; then
 
 			# TODO determine badge URL depending on the return code of the arc-validate tool
 			badge_url="${CI_SERVER_URL}/${project_name}/-/pipelines/${event_id}/test_report"
-			badge_url="$(get_publication_link)"
+			#badge_url="$(get_publication_link)"
 			ret="$(curl -k -X POST \
 				-H "PRIVATE-TOKEN: $gitlab_token" \
 				-H "Content-Type: application/json" \
