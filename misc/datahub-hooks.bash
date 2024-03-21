@@ -129,9 +129,7 @@ if [ "$event_type" = "pipeline" ]; then
 	if [ -z "$user_email" ]; then
 		echo "Failed to find email of commit for the pipeline... continuing."
 	fi
-	ref="$(jq -r '.object_attributes.ref // empty' <<< "$json")"
-	# TODO branch name
-	if [ "$ref" = "$arc_badges_branch_name" ]; then
+	if [ "$event_ref" = "$arc_badges_branch_name" ]; then
 		ret="$(curl -X POST -k \
 			-H "Content-Type: application/json" \
 			-H "X-Gitlab-Token: $arc_registry_token" \
@@ -152,11 +150,11 @@ if [ "$event_type" = "pipeline" ]; then
 		echo "branch does not exists, create it"
 		tmp_dir="$(mktemp -d)"
 		cd "$tmp_dir"
-		git init -b "$arc_badges_branch_name" .
+		git init -b "main" .
 		git commit --allow-empty --author "DataHUB CI <ci@datahub>" -m "Quality control branch"
 		ret="$(git push \
 			https://oauth:${gitlab_token}@${CI_SERVER_URL##*/}/${project_name} \
-			${arc_badges_branch_name}:${arc_quality_control_branch_name}
+			main:${arc_quality_control_branch_name}
 		)"
 		echo "$arc_quality_control_branch_name branch creation: $ret"
 		cd -
@@ -168,7 +166,7 @@ if [ "$event_type" = "pipeline" ]; then
 	fi
 	## END BLOCK CHECK CQC
 
-	purge_badges
+	[ "$event_ref" = "$arc_badges_branch_name" ] && purge_badges
 
 	## BLOCK COMMIT ARTIFACTS TO $arc_quality_control_branch_name
 	commit_id="$(jq -r '.commit.id // empty' <<< "$json")"
@@ -241,7 +239,8 @@ if [ "$event_type" = "pipeline" ]; then
 			
 			badge_name="validation-$(echo -n ${file%%@*} | tr '/' '-')"
 			echo "badge name: $badge_name"
-			# TODO determine badge URL
+
+			# TODO determine badge URL depending on the return code of the arc-validate tool
 			badge_url="${CI_SERVER_URL}/${project_name}/-/pipelines/${event_id}/test_report"
 			badge_url="$(get_publication_link)"
 			ret="$(curl -k -X POST \
