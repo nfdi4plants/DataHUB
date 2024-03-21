@@ -77,31 +77,23 @@ quality_report_generator:
               - $CI_COMMIT_BRANCH/*/*.xml
           expire_in: 1 hour
       EOF
-      if [ "$p" = "invenio" ]; then
-        cat << EOF >> quality_reports.yml
+        if [ "$p" = "invenio" ]; then
+          cat << EOF >> quality_reports.yml
       Publication Metadata:
         stage: generate_metadata
-        #dependencies:
-        #  - validate-invenio
-        #needs:
-        #  - validate-invenio  
-        image: docker:latest
-        services:
-          - docker:dind
-        variables:
-          DOCKER_HOST: "tcp://docker:2375"
-          DOCKER_TLS_CERTDIR: ''
-          ARC_PATH: .
+        needs:
+          - validate-invenio
+        image: ghcr.io/nfdi4plants/arc-to-invenio:main
         script:
           - echo "Creating publication metadata..."
-          - docker run --rm -v .:/results -v .:/arc ghcr.io/nfdi4plants/arc-to-invenio:main bash -c "arc-to-invenio -p .; ls -la; cat metadata.json;"
-          - ls -la
+          - arc-to-invenio -p .
         artifacts:
           when: always
           paths:
             - metadata.json
+        when: always
       EOF
-      fi
+        fi
         cat quality_reports.yml
       done < <(yq -r '.validation_packages[] | "\(.name) \(.version)"' ${CI_PROJECT_DIR}/.arc/validation_packages.yml )
   artifacts:
