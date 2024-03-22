@@ -17,7 +17,7 @@ get_publication_link() {
 	basic_auth="$( \
 		echo -n "${archigator_user}:${archigator_password}" | base64
 	)"
-	ret="$(curl -k -X POST \
+	ret="$(curl -k -L -X POST \
 		-H 'Content-Type: application/json' \
 		-H "Authorization: Basic ${basic_auth}" \
 		-d '{"project_id": '$project_id'}' \
@@ -33,7 +33,7 @@ get_publication_link() {
 
 purge_badges() {
 	# BLOCK PURGE BADGES
-	ret="$(curl -k -X GET \
+	ret="$(curl -k -L -X GET \
 		-H "PRIVATE-TOKEN: $gitlab_token" \
 		"${CI_API_V4_URL}/projects/${project_id}/badges"
 		)"
@@ -103,7 +103,7 @@ if [ -z "$project_name" ]; then
 fi
 
 if [ "$event_name" = "project_create" ]; then
-	ret="$(curl -k -X POST \
+	ret="$(curl -k -L -X POST \
 		-H "PRIVATE-TOKEN: $gitlab_token" \
 		-H "Content-Type: application/json" \
 		-d '{
@@ -130,7 +130,7 @@ if [ "$event_type" = "pipeline" ]; then
 		echo "Failed to find email of commit for the pipeline... continuing."
 	fi
 	if [ "$event_ref" = "$arc_badges_branch_name" ]; then
-		ret="$(curl -X POST -k \
+		ret="$(curl -k -L -X POST \
 			-H "Content-Type: application/json" \
 			-H "X-Gitlab-Token: $arc_registry_token" \
 			-d "$json" \
@@ -141,7 +141,7 @@ if [ "$event_type" = "pipeline" ]; then
 	## END BLOCK GAJENDRA
 
 	## BLOCK CHECK CQC BRANCH
-	ret="$(curl -k -o /dev/null -s -w "%{http_code}" \
+	ret="$(curl -k -L -o /dev/null -s -w "%{http_code}" \
 		-H "Content-Type: application/json" \
 		-H "PRIVATE-TOKEN: $gitlab_token" \
 		"${CI_API_V4_URL}/projects/${project_id}/repository/branches/${arc_quality_control_branch_name}"
@@ -210,7 +210,7 @@ if [ "$event_type" = "pipeline" ]; then
 			file="${file:2}"
 			file_urlencoded="$(echo -n "$file" | jq -sRr @uri)"
 			## BLOCK ARTIFACTS
-			ret="$(curl -k -s -o /dev/null \
+			ret="$(curl -k -L -s -o /dev/null \
 				-w %{http_code} \
 				-H "Content-Type: application/json" \
 				-H "PRIVATE-TOKEN: $gitlab_token" \
@@ -243,7 +243,7 @@ if [ "$event_type" = "pipeline" ]; then
 			# TODO determine badge URL depending on the return code of the arc-validate tool
 			badge_url="${CI_SERVER_URL}/${project_name}/-/pipelines/${event_id}/test_report"
 			#badge_url="$(get_publication_link)"
-			ret="$(curl -k -X POST \
+			ret="$(curl -k -L -X POST \
 				-H "PRIVATE-TOKEN: $gitlab_token" \
 				-H "Content-Type: application/json" \
 				-d '{
@@ -262,7 +262,7 @@ if [ "$event_type" = "pipeline" ]; then
 		rm -rf "$tmp_dir"
 	done
 	
-	ret="$(curl -k -X POST \
+	ret="$(curl -k -L -X POST \
 	  -H "PRIVATE-TOKEN: $gitlab_token" \
 	  -H "Content-Type: application/json" \
 	  -d "$commit_payload" \
