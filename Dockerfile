@@ -19,3 +19,7 @@ RUN /scripts/patch.sh
 RUN mkdir -p /var/log/datahub
 RUN chown git /var/log/datahub
 
+# install jq
+RUN apt-get update -y
+RUN apt-get install jq -y
+
