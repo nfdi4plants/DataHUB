@@ -19,3 +19,5 @@ RUN /scripts/patch.sh
 RUN mkdir -p /var/log/datahub
 RUN chown git /var/log/datahub
 
+RUN apt update
+RUN apt install -y jq
