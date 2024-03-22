@@ -10,7 +10,21 @@ create_badge() {
 }
 
 arc_registry_push() {
-	:
+	if [ -z "$arc_registry_endpoint" ] || [ -z "$arc_registry_token" ]; then
+		echo "ARC Registry endpoint or token not configured. Skipping..."
+		return
+	fi
+	user_email="$(jq -r '.commit.author.email // empty' <<< "$json")"
+	if [ -z "$user_email" ]; then
+		echo "Failed to find email of commit for the pipeline... continuing."
+	fi
+	ret="$(curl -k -L -X POST \
+		-H "Content-Type: application/json" \
+		-H "X-Gitlab-Token: $arc_registry_token" \
+		-d "$json" \
+		"$arc_registry_endpoint"
+	)"
+	echo "ARC registry push returned: $ret"
 }
 
 get_publication_link() {
@@ -124,21 +138,10 @@ if [ "$event_type" = "pipeline" ]; then
 		exit 1
 	fi
 
-	## BLOCK GAJENDRA
-	user_email="$(jq -r '.commit.author.email // empty' <<< "$json")"
-	if [ -z "$user_email" ]; then
-		echo "Failed to find email of commit for the pipeline... continuing."
+	if [ "$event_ref" = "main" ] || [ "$event_ref" = "master" ]; then
+		echo "Pushing event to the ARC registry...."
+		arc_registry_push
 	fi
-	if [ "$event_ref" = "$arc_badges_branch_name" ]; then
-		ret="$(curl -k -L -X POST \
-			-H "Content-Type: application/json" \
-			-H "X-Gitlab-Token: $arc_registry_token" \
-			-d "$json" \
-			"$arc_registry_endpoint"
-		)"
-		echo "GAJ: $ret"
-	fi
-	## END BLOCK GAJENDRA
 
 	## BLOCK CHECK CQC BRANCH
 	ret="$(curl -k -L -o /dev/null -s -w "%{http_code}" \
