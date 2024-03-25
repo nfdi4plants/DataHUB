@@ -185,9 +185,9 @@ We will link to external information, where the installation process differs if 
 - A seperate server  
 
 ### Docker installation
-We only tested theDocker executer for the GitLab runner. If you want to try and make another executer work, you can find more information on executers [here](https://docs.gitlab.com/runner/executors/index.html). If you decide to use the docker executer, as we recommend, you need to install docker on the server where your runner will be installed. This can be achieved by the following steps, which you can also find on the [docker website](https://docs.docker.com/engine/install/debian/):
+We only tested the Docker executor for the GitLab runner. If you want to try and make another executor work, you can find more information on executors [here](https://docs.gitlab.com/runner/executors/index.html). If you decide to use the docker executor, as recommended, you need to install docker on the server where your runner will be installed. This can be achieved by the following steps, which you can also find on the [docker website](https://docs.docker.com/engine/install/debian/):
 
-1. Uninstall confilicting packages:
+1. Uninstall conflicting packages:
 ``` 
 for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done 
 ```
@@ -208,7 +208,7 @@ echo \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt-get update
 ```
-3. Install requiered packages
+3. Install required packages
 ```
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
@@ -234,16 +234,12 @@ sudo apt-get install gitlab-runner
 ```
 
 ### Registering the GitLab runner
-1. In your already set up  GitLab instance, set up your runner as a instance runner. 
-    To do so, you need to open the admin area, select th "Instance Runners" entry in the "Features" menu. Alternatively visit ```https://<your-datahub-hostname>/admin/runners```.
+1. In you already set up  GitLab instance, set up your runner as a instance runner. 
+    To do so, you need to open the admin area, select the "Instance Runners" entry in the "Features" menu. Alternatively visit ```https://<your-datahub-hostname>/admin/runners```.
 2. Click on "New instance runner"
 3. Under "Platform", select "Linux" as operating systems.
-4. Under "Tags", check the bo for "Run untagged jobs"
+4. Under "Tags", check the checkbox for "Run untagged jobs"
 5. Click on "Create runner"
-6. Follow the steps which are shown to you. During these steps you need to choose an executer, as well as an image if you choose the docker executer.
-   - For the executer, choose "docker".
-   - For the base image, choose a Linux base image like debian or alpine from dockerhub.
-
-
-
-
+6. Follow the steps which are shown to you. During these steps you need to choose an executor, as well as a default docker image if you choose the docker executor.
+   - For the executor, choose "docker".
+   - For the default image, choose a basic Linux image like debian or alpine from dockerhub.
