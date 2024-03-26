@@ -31,7 +31,6 @@ Create ARC JSON:
 quality_report_generator:
   stage: quality_report_generator
   rules:
-    - if: $CI_COMMIT_REF_NAME != "cqc"
     - exists:
       - .arc/validation_packages.yml
   script:
@@ -64,8 +63,6 @@ quality_report_generator:
           - ret=$?
           - mkdir -p "${CI_COMMIT_BRANCH}"
           - mv ".arc-validate-results/${p}" "${CI_COMMIT_BRANCH}/${p}${v:+@$v}"
-          - ls -la "$CI_COMMIT_BRANCH"/* || true
-          - ls -la "$CI_COMMIT_BRANCH"/*/* || true
           - exit $ret
         artifacts:
           when: always
