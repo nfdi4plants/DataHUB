@@ -84,6 +84,8 @@ quality_report_generator:
         script:
           - echo "Creating publication metadata..."
           - arc-to-invenio -p .
+          - |
+            [ -e metadata.json ] || exit 1
         artifacts:
           when: always
           paths:
