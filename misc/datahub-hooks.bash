@@ -138,7 +138,7 @@ if [ "$event_type" = "pipeline" ]; then
 		exit 1
 	fi
 
-	if [ "$event_ref" = "main" ] || [ "$event_ref" = "master" ]; then
+	if [ "$event_ref" = "$arc_badges_branch_name" ] || [ "$event_ref" = "master" ]; then
 		echo "Pushing event to the ARC registry...."
 		arc_registry_push
 	fi
@@ -170,6 +170,7 @@ if [ "$event_type" = "pipeline" ]; then
 	## END BLOCK CHECK CQC
 
 	[ "$event_ref" = "$arc_badges_branch_name" ] && purge_badges
+	[ "$event_ref" = "master" ] && purge_badges
 
 	## BLOCK COMMIT ARTIFACTS TO $arc_quality_control_branch_name
 	commit_id="$(jq -r '.commit.id // empty' <<< "$json")"
@@ -238,7 +239,7 @@ if [ "$event_type" = "pipeline" ]; then
 			## BLOCK BADGES ONLY
 			# check for svg suffix and only for the configured branch for badges
 			[ "$file" = "${file%.svg}" ] && continue
-			[ "$event_ref" != "$arc_badges_branch_name" ] && continue
+			! ( [ "$event_ref" != "$arc_badges_branch_name" ] || [ "$event_ref" != "master" ] ) && continue
 			
 			badge_name="validation-$(echo -n ${file%%@*} | tr '/' '-')"
 			echo "badge name: $badge_name"
