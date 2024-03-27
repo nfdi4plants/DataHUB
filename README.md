@@ -171,3 +171,75 @@ services:
       - ./data/gitlab:/var/opt/gitlab
     shm_size: '256m'
 ```
+
+## ARC validation
+
+The ARC validation feature is implemented using GitLabs CI/CD functionality.
+Therefore, to make use of this feature, it is necessary to setup and configure a GitLab 
+runner. To do so, follow these instructions:
+
+**Note:** In the following, we will assume that you are using a Ubuntu/Debian based server.
+We will link to external information, where the installation process differs if you are using another distribution.
+
+### Prerequisites:
+- A seperate server  
+
+### Docker installation
+We only tested the Docker executor for the GitLab runner. If you want to try and make another executor work, you can find more information on executors [here](https://docs.gitlab.com/runner/executors/index.html). If you decide to use the docker executor, as recommended, you need to install docker on the server where your runner will be installed. This can be achieved by the following steps, which you can also find on the [docker website](https://docs.docker.com/engine/install/debian/):
+
+1. Uninstall conflicting packages:
+``` 
+for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done 
+```
+2. Set up apt repository:
+
+```
+# Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+```
+3. Install required packages
+```
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+4. Verify installation
+```
+sudo docker run hello-world
+```
+
+If you are not on a debian based system, you can find installation instructions [here](https://docs.docker.com/engine/install/).
+
+### Installing GitLab Runner
+We are providing the steps for installing the GitLab runner, which we sourced from [here](https://docs.gitlab.com/runner/register/index.html). If you are using a distribution which is not debian based, or even one for which GitLab does not provide an repository, you can find further instructions [here](https://docs.gitlab.com/runner/install/index.html).
+
+1. Add the official GitLab repository
+```
+curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh" | sudo bash
+```
+
+2. Install the latest version of GitLab Runner
+```
+sudo apt-get install gitlab-runner
+```
+
+### Registering the GitLab runner
+1. In you already set up  GitLab instance, set up your runner as a instance runner. 
+    To do so, you need to open the admin area, select the "Instance Runners" entry in the "Features" menu. Alternatively visit ```https://<your-datahub-hostname>/admin/runners```.
+2. Click on "New instance runner"
+3. Under "Platform", select "Linux" as operating systems.
+4. Under "Tags", check the checkbox for "Run untagged jobs"
+5. Click on "Create runner"
+6. Follow the steps which are shown to you. During these steps you need to choose an executor, as well as a default docker image if you choose the docker executor.
+   - For the executor, choose "docker".
+   - For the default image, choose a basic Linux image like debian or alpine from dockerhub.
