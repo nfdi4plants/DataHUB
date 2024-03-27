@@ -28,6 +28,10 @@ arc_registry_push() {
 }
 
 get_publication_link() {
+	if [ -z "$archigator_url" ] || [ -z "$archigator_user" ] || [ -z "$archigator_password" ]; then
+		echo "Archigator publication microservice not configured. Skipping..."
+		return
+	fi
 	basic_auth="$( \
 		echo -n "${archigator_user}:${archigator_password}" | base64
 	)"
