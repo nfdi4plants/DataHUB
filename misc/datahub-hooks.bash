@@ -147,7 +147,7 @@ if [ "$event_name" = "project_create" ]; then
 		}' \
 		"${CI_API_V4_URL}/projects/$project_id/badges"
 	)"
-	echo "pipeline branch creation: $ret"
+	echo "pipeline badge creation: $ret"
 
 fi
 
