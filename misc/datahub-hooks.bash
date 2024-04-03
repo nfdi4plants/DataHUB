@@ -1,4 +1,23 @@
 #!/bin/bash
+#
+# This script relies on an external configuration file named
+# 'datahub-secrets.include' to function properly. This file
+# must be mounted within the datahub docker container under
+# '/etc/gitlab/datahub-secrest.include' for this script to be
+# able to read it.
+#
+# If that file is missing the script will do basically nothing.
+#
+# You can activate more logging output using the HOOK_DEBUG
+# variable defined in the secrets file. HOOK_DEBUG set to 1
+# will log all the commands being executed within a file.
+# You can change the value on-the-fly as it is read everytime
+# this scripts executes without the need to restart the docker
+# container.
+#
+# *IMPORTANT NOTE*: If debug logging is active, API tokens will
+# be printed as part of the commands within the logfile.
+# Be careful who you send this log to avoid credentials leaks!
 
 
 authenticated_request() {
