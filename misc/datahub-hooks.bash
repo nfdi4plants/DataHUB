@@ -50,7 +50,6 @@ get_publication_link() {
 }
 
 purge_badges() {
-	# BLOCK PURGE BADGES
 	ret="$(curl -k -L -X GET \
 		-H "PRIVATE-TOKEN: $gitlab_token" \
 		"${CI_API_V4_URL}/projects/${project_id}/badges"
@@ -62,9 +61,7 @@ purge_badges() {
 			"${CI_API_V4_URL}/projects/$project_id/badges/$badge_id"
 		)"
 	done	
-	# END BLOCK PURGE BADGES
 }
-
 
 # declare global variables
 declare -rg arc_validation_stage_name="arc_validation"
@@ -147,7 +144,6 @@ if [ "$event_type" = "pipeline" ]; then
 		arc_registry_push
 	fi
 
-	## BLOCK CHECK CQC BRANCH
 	ret="$(curl -k -L -o /dev/null -s -w "%{http_code}" \
 		-H "Content-Type: application/json" \
 		-H "PRIVATE-TOKEN: $gitlab_token" \
@@ -171,12 +167,10 @@ if [ "$event_type" = "pipeline" ]; then
 	else
 		echo "$arc_quality_control_branch_name branch check: $ret"
 	fi
-	## END BLOCK CHECK CQC
 
 	[ "$event_ref" = "$arc_badges_branch_name" ] && purge_badges
 	[ "$event_ref" = "master" ] && purge_badges
 
-	## BLOCK COMMIT ARTIFACTS TO $arc_quality_control_branch_name
 	commit_id="$(jq -r '.commit.id // empty' <<< "$json")"
 	if [ -z "$commit_id" ]; then
 		echo "Failed to find commit id triggering the pipeline... exiting."
@@ -196,7 +190,6 @@ if [ "$event_type" = "pipeline" ]; then
 	  "actions": []
 	}'
 
-	## JOB LOOP START
 	for job_id in ${job_ids[@]}; do
 	
 		tmp_dir="$(mktemp -d)"
@@ -208,7 +201,6 @@ if [ "$event_type" = "pipeline" ]; then
 			> "$job_artifacts_path"
 		)"
 		echo "Fetching job (${job_id}) artifacts for project ${project_id} returned: $ret"
-		# the following is kinda lazy, TODO better
 		unzip "$job_artifacts_path"
 		rm -f "$job_artifacts_path"
 		
@@ -217,7 +209,7 @@ if [ "$event_type" = "pipeline" ]; then
 	
 			file="${file:2}"
 			file_urlencoded="$(echo -n "$file" | jq -sRr @uri)"
-			## BLOCK ARTIFACTS
+
 			ret="$(curl -k -L -s -o /dev/null \
 				-w %{http_code} \
 				-H "Content-Type: application/json" \
@@ -240,7 +232,6 @@ if [ "$event_type" = "pipeline" ]; then
 				' <<< "$commit_payload"
 	
 			)"
-			## BLOCK BADGES ONLY
 			# check for svg suffix and only for the configured branch for badges
 			[ "$file" = "${file%.svg}" ] && continue
 			! ( [ "$event_ref" != "$arc_badges_branch_name" ] || [ "$event_ref" != "master" ] ) && continue
@@ -249,6 +240,7 @@ if [ "$event_type" = "pipeline" ]; then
 			echo "badge name: $badge_name"
 
 			# TODO determine badge URL depending on the return code of the arc-validate tool
+			# TODO: Idea: make the 'get_publication_link' function overwritable through sourcing of the configuration file?
 			badge_url="${CI_SERVER_URL}/${project_name}/-/pipelines/${event_id}/test_report"
 			#badge_url="$(get_publication_link)"
 			ret="$(curl -k -L -X POST \
@@ -278,5 +270,4 @@ if [ "$event_type" = "pipeline" ]; then
 	)"
 
 	echo "Commit returned: $ret"
-	## END BLOCK COMMIT ARTIFACTS
 fi
