@@ -67,11 +67,11 @@ quality_report_generator:
         artifacts:
           when: always
           paths:
-            - $CI_COMMIT_BRANCH/*/*.xml
-            - $CI_COMMIT_BRANCH/*/*.svg
+            - ${CI_COMMIT_BRANCH}/${p}${v:+@$v}/*.xml
+            - ${CI_COMMIT_BRANCH}/${p}${v:+@$v}/*.svg
           reports:
             junit:
-              - $CI_COMMIT_BRANCH/*/*.xml
+              - ${CI_COMMIT_BRANCH}/${p}${v:+@$v}/*.xml
           expire_in: 1 hour
       EOF
         if [ "$p" = "invenio" ]; then
