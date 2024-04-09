@@ -20,13 +20,18 @@
 # Be careful who you send this log to avoid credentials leaks!
 
 
+# TODO: idea wrap the curl request to use the standard options
 authenticated_request() {
 	:
 }
 
+# TODO: function to create badge using the 3 arguments expected
+# by the API: name, link_name, link_url
 create_badge() {
 	:
 }
+
+
 
 arc_registry_push() {
 	if [ -z "$arc_registry_endpoint" ] || [ -z "$arc_registry_token" ]; then
