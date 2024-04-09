@@ -82,6 +82,12 @@ purge_badges() {
 	done	
 }
 
+## MAIN
+
+# setup logging
+declare -rg log_file="/var/log/datahub/${0##*/}.$$.log"
+exec &> "$log_file"
+
 # declare global variables
 declare -rg arc_validation_stage_name="arc_validation"
 declare -rg arc_badges_branch_name="main"
@@ -103,18 +109,26 @@ event_ref="$(jq -r '.object_attributes.ref // empty' <<< "$json")"
 event_id="$(jq -r '.object_attributes.id // empty' <<< "$json")"
 
 if { [ -n "$event_type" ] && [ "$event_type" != "pipeline" ]; } \
-	|| { [ -n "$event_name" ] && [ "$event_name" != "project_create" ] && [ "$event_name" != "push" ]; }; then
+	|| { [ -n "$event_name" ] && [ "$event_name" != "project_create" ]; }; then
 	echo "Ignoring $event_type | $event_name"
 	exit 0
 fi
 
-## Read the configuration file
+## Preliminary checks are complete, let's read the configuration file
 . "$datahub_secrets"
 
-# setup logging
-declare -rg log_file="/var/log/datahub/${0##*/}.$$.log"
+if [ -z "$CI_SERVER_URL" ]; then
+	echo "CI_SERVER_URL not set. Exiting..."
+	exit 1
+fi
+
+if [ -z "$api_token" ]; then
+	echo "api_token not set. Exiting..."
+	exit 1
+fi
+
+# Handle debug mode
 if [ "$HOOK_DEBUG" = "1" ]; then
-	exec &> "$log_file"
 	set -x
 fi
 
