@@ -70,13 +70,13 @@ get_publication_link() {
 
 purge_badges() {
 	ret="$(curl -k -L -X GET \
-		-H "PRIVATE-TOKEN: $gitlab_token" \
+		-H "PRIVATE-TOKEN: $api_token" \
 		"${CI_API_V4_URL}/projects/${project_id}/badges"
 		)"
 	for badge_id in $(jq -r '.[] | select(.name | startswith("validation-")).id' <<< "$ret"); do
 		# badge found, delete it
 		ret="$(curl -k -X DELETE \
-			-H "PRIVATE-TOKEN: $gitlab_token" \
+			-H "PRIVATE-TOKEN: $api_token" \
 			"${CI_API_V4_URL}/projects/$project_id/badges/$badge_id"
 		)"
 	done	
@@ -138,7 +138,7 @@ fi
 
 if [ "$event_name" = "project_create" ]; then
 	ret="$(curl -k -L -X POST \
-		-H "PRIVATE-TOKEN: $gitlab_token" \
+		-H "PRIVATE-TOKEN: $api_token" \
 		-H "Content-Type: application/json" \
 		-d '{
 			"name": "pipeline-badge",
@@ -165,7 +165,7 @@ if [ "$event_type" = "pipeline" ]; then
 
 	ret="$(curl -k -L -o /dev/null -s -w "%{http_code}" \
 		-H "Content-Type: application/json" \
-		-H "PRIVATE-TOKEN: $gitlab_token" \
+		-H "PRIVATE-TOKEN: $api_token" \
 		"${CI_API_V4_URL}/projects/${project_id}/repository/branches/${arc_quality_control_branch_name}"
 	)"
 	if [ "$ret" == "404" ]; then
@@ -175,7 +175,7 @@ if [ "$event_type" = "pipeline" ]; then
 		git init -b "main" .
 		git commit --allow-empty --author "DataHUB CI <ci@datahub>" -m "Quality control branch"
 		ret="$(git push \
-			https://oauth:${gitlab_token}@${CI_SERVER_URL##*/}/${project_name} \
+			https://oauth:${api_token}@${CI_SERVER_URL##*/}/${project_name} \
 			main:${arc_quality_control_branch_name}
 		)"
 		echo "$arc_quality_control_branch_name branch creation: $ret"
@@ -215,7 +215,7 @@ if [ "$event_type" = "pipeline" ]; then
 		cd "$tmp_dir"
 		job_artifacts_path="${project_id}.${job_id}.artifacts.zip"
 		ret="$(curl -k -L \
-			-H "PRIVATE-TOKEN: $gitlab_token" \
+			-H "PRIVATE-TOKEN: $api_token" \
 			"${CI_API_V4_URL}/projects/${project_id}/jobs/${job_id}/artifacts" \
 			> "$job_artifacts_path"
 		)"
@@ -232,7 +232,7 @@ if [ "$event_type" = "pipeline" ]; then
 			ret="$(curl -k -L -s -o /dev/null \
 				-w %{http_code} \
 				-H "Content-Type: application/json" \
-				-H "PRIVATE-TOKEN: $gitlab_token" \
+				-H "PRIVATE-TOKEN: $api_token" \
 				"${CI_API_V4_URL}/projects/${project_id}/repository/files/${file_urlencoded}?ref=${arc_quality_control_branch_name}"
 			)"
 			action="update"
@@ -263,7 +263,7 @@ if [ "$event_type" = "pipeline" ]; then
 			badge_url="${CI_SERVER_URL}/${project_name}/-/pipelines/${event_id}/test_report"
 			#badge_url="$(get_publication_link)"
 			ret="$(curl -k -L -X POST \
-				-H "PRIVATE-TOKEN: $gitlab_token" \
+				-H "PRIVATE-TOKEN: $api_token" \
 				-H "Content-Type: application/json" \
 				-d '{
 					"name": "'"${badge_name}"'",
@@ -282,7 +282,7 @@ if [ "$event_type" = "pipeline" ]; then
 	done
 	
 	ret="$(curl -k -L -X POST \
-	  -H "PRIVATE-TOKEN: $gitlab_token" \
+	  -H "PRIVATE-TOKEN: $api_token" \
 	  -H "Content-Type: application/json" \
 	  -d "$commit_payload" \
 	  "${CI_API_V4_URL}/projects/${project_id}/repository/commits"
