@@ -105,6 +105,16 @@ if [ ! -e "$datahub_secrets" ]; then
 	exit 1
 fi
 
+# check for additional functions to include
+declare -rg datahub_functions="/etc/gitlab/datahub-functions.include"
+if [ -e "$datahub_functions" ]; then
+	if bash -n "$datahub_functions"; then
+		. "$datahub_functions"
+	fi
+else
+	echo "DataHUB function file not found at '$datahub_functions'..."
+fi
+
 # Get the event from stdin 
 json="$(cat -)"
 
