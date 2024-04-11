@@ -172,7 +172,7 @@ services:
     shm_size: '256m'
 ```
 
-## ARC validation
+## Activation of the ARC validation
 
 The ARC validation feature is implemented using GitLabs CI/CD functionality.
 Therefore, to make use of this feature, it is necessary to setup and configure a GitLab 
@@ -243,3 +243,68 @@ sudo apt-get install gitlab-runner
 6. Follow the steps which are shown to you. During these steps you need to choose an executor, as well as a default docker image if you choose the docker executor.
    - For the executor, choose "docker".
    - For the default image, choose a basic Linux image like debian or alpine from dockerhub.
+
+## Set up the ARC validation process
+
+### Prerequisites:
+- A valid administrator access token with the scope "API". Make sure to always keep it valid.
+- Enabled Auto DevOps, preferably instance wide. You can find out how to do this [here](https://docs.gitlab.com/ee/topics/autodevops/#at-the-instance-level).
+
+### Configuration
+For the validation process to work, there are some additional configuration options and files required. First, a configuration file containing the following information is requiered.
+
+```
+# Admin token for the GitLab API
+gitlab_token="<your_admin_token_here>"
+
+# ARC registry (no need to specify)
+arc_registry_token=""
+arc_registry_endpoint=""
+
+# DataHUB URL & API endpoint
+CI_SERVER_URL="https://<your_gitlab_host>"
+CI_API_V4_URL="${CI_SERVER_URL}/api/v4"
+
+# Debugging: set to 1 to log hook execution in /var/log/datahub, 0 to disable.
+HOOK_DEBUG=1
+```
+
+This configuration file is used to provide the acces token and the API endpoint to a script which is used to upload artifacts to GitLab repositories. It is also defines if debug logs should be keept. As this file needs to be accessible for the container, as well as a location to store the logs outside the container needs to be defined, the following addition need to be made to the docker compose file. In the following example, the configuration file mentioned is named "secrets.include". The directory containing the log files is named "datahub-logs"
+
+```
+    volumes:
+      - <path_to_config_file>/secrets.include:/etc/gitlab/datahub-secrets.include
+      - <pah_to_store_log_files>/datahub-logs:/var/log/datahub
+    shm_size: '256m'
+```
+
+### Process descriptions
+There are different CI/CD pipelines available, all of which have different prerequisites and are triggered automatically.
+
+#### Creation of arc.json
+We start with the pipeline which is activated by default for all ARCs for which Auto DevOps is enabled. The purpose of this pipline is to create an arc.json file,
+which will be stored in the package registry. This file is a machine digestible representation of the ISA file, which is used by numerous different DataPLANT tools.
+This pipeline is triggered automatically when an ARC or repository is created, except when it is created from a template.
+During execution of this pipeline, a new empty branch with the name "cqc" is created and a batch indicating that the pipline passed is shown in the
+repository overview. This should always be the case since the pipeline is designed to never fail. 
+
+#### Validation packages
+It is possible to validate if your ARC fullfils the ARC specification and is fit for publication through different platforms.
+You can choose for which platform the ARC should be validated for by selecting the corresponding "validation package".
+As of now there is only one validation package for invenio, but there will be more options in the future.
+These packages can be selected by placing the following file in your ARC.
+
+```
+validation_packages:
+  - name: <package_name>
+    version: 1.0.0          # optional
+  - name: <package_name>
+```
+**Note:** The filepath for this file in your ARC has to be ".arc/validation_packages.yml"
+
+When this file is present in your repository, the pipeline will be triggerd on each commit.
+A job called "quality_report_generator" will be executed, which in turn will execute the trigger job "quality_report". This job will carry out one subprocess per specified validation package.
+
+
+
+
