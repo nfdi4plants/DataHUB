@@ -287,10 +287,13 @@ if [ "$event_type" = "pipeline" ]; then
 			badge_name="validation-$(echo -n ${file%%@*} | tr '/' '-')"
 			echo "badge name: $badge_name"
 
-			# TODO determine badge URL depending on the return code of the arc-validate tool
-			# TODO: Idea: make the 'get_publication_link' function overwritable through sourcing of the configuration file?
-			badge_url="${CI_SERVER_URL}/${project_name}/-/pipelines/${event_id}/test_report"
-			#badge_url="$(get_publication_link)"
+			# TODO determine badge URL depending on the return code of the arc-validate tool and not only
+			# whether the get_publication_link function is defined or not
+			if declare -F "get_publication_link" > /dev/null; then
+				badge_url="$(get_publication_link)"
+			else
+				badge_url="${CI_SERVER_URL}/${project_name}/-/pipelines/${event_id}/test_report"
+			fi
 			ret="$(curl -k -L -X POST \
 				-H "PRIVATE-TOKEN: $api_token" \
 				-H "Content-Type: application/json" \
