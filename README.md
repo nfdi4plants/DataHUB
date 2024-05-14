@@ -305,5 +305,5 @@ validation_packages:
 When this file is present in your repository, the pipeline will be triggerd on each commit.
 A job called "quality_report_generator" will be executed, which in turn will execute the trigger job "quality_report". This job will carry out one subprocess per specified validation package. For each of these validation processes, a validation report in form of an XML file as well as the badge image will is created. They are stored in the "cqc" branch in the directory \<branch\>/\<package\>@\<version\>. With \<branch\> being the branch in which the CI process was started. If there is no version specified in the "validation_packages.yml" file, then the "@\<version\>" part is omitted.
 
-
+**Note:** The validation packages themselves are still a work in progress. Contact us if you need more information about which package would be available for testing.
 
