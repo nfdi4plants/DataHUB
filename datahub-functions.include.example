@@ -1,0 +1,13 @@
+# This file is included by the hook script on each execution. You can define
+# additional functions that can extend the basic ARC validation in place.
+
+# Currently, only a function called 'get_publication_link()' is used in the main
+# code. This function is used to get the badge link to point to when an ARC has
+# been validated and is marked ready for further processing. This is usually
+# tied to publication plattform of some kind, hence the name. Note that there
+# are a lot of project/job related information available in this context.
+# Refer to the main script for a list of variables or contact us.
+
+get_publication_link() {
+	echo "https://example.com/publish"
+}
