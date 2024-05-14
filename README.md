@@ -255,7 +255,7 @@ For the validation process to work, there are some additional configuration opti
 
 ```
 # Admin token for the GitLab API
-gitlab_token="<your_admin_token_here>"
+api_token="<your_admin_token_here>"
 
 # ARC registry (no need to specify)
 arc_registry_token=""
