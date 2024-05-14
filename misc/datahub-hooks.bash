@@ -51,28 +51,6 @@ arc_registry_push() {
 	echo "ARC registry push returned: $ret"
 }
 
-get_publication_link() {
-	if [ -z "$archigator_url" ] || [ -z "$archigator_user" ] || [ -z "$archigator_password" ]; then
-		echo "Archigator publication microservice not configured. Skipping..."
-		return
-	fi
-	basic_auth="$( \
-		echo -n "${archigator_user}:${archigator_password}" | base64
-	)"
-	ret="$(curl -k -L -X POST \
-		-H 'Content-Type: application/json' \
-		-H "Authorization: Basic ${basic_auth}" \
-		-d '{"project_id": '$project_id'}' \
-		"${archigator_url}/api/v1/setup/generatelink"
-	)"
-	link_url="$(jq -r '.link // empty' <<< "$ret")"
-	if [ -z "$link_url" ]; then
-		echo "Could not retrieve publication link from archigator."
-		return
-	fi
-	echo "$link_url"
-}
-
 purge_badges() {
 	ret="$(curl -k -L -X GET \
 		-H "PRIVATE-TOKEN: $api_token" \
