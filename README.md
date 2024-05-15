@@ -274,7 +274,7 @@ This configuration file is used to provide the acces token and the API endpoint 
 ```
     volumes:
       - <path_to_config_file>/secrets.include:/etc/gitlab/datahub-secrets.include
-      - <pah_to_store_log_files>/datahub-logs:/var/log/datahub
+      - <path_to_store_log_files>/datahub-logs:/var/log/datahub
     shm_size: '256m'
 ```
 
