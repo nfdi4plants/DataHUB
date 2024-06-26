@@ -269,7 +269,7 @@ CI_API_V4_URL="${CI_SERVER_URL}/api/v4"
 HOOK_DEBUG=1
 ```
 
-This configuration file is used to provide the acces token and the API endpoint to a script which is used to upload artifacts to GitLab repositories. It is also defines if debug logs should be keept. As this file needs to be accessible for the container, as well as a location to store the logs outside the container needs to be defined, the following addition need to be made to the docker compose file. In the following example, the configuration file mentioned is named "secrets.include". The directory containing the log files is named "datahub-logs"
+This configuration file is used to provide the acces token and the API endpoint to a script which is used to upload artifacts to GitLab repositories. It is also defines if debug logs should be keept. As this file needs to be accessible for the container, as well as a location to store the logs outside the container needs to be defined, the following addition need to be made to the docker compose file. In the following example, the configuration file mentioned is named "secrets.include". The directory containing the log files is named "datahub-logs". Make sure that the log directory is owned by the user `git` within the container otherwise the script won't be able to write the logfiles.
 
 ```
     volumes:
