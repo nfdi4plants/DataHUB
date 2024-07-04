@@ -49,6 +49,10 @@ arc_registry_push() {
 	echo "ARC registry push returned: $ret"
 }
 
+get_publication_link() {
+	:
+}
+
 purge_badges() {
 	ret="$(curl -k -L -X GET \
 		-H "PRIVATE-TOKEN: $api_token" \
