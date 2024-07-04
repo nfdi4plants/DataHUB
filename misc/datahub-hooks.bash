@@ -31,8 +31,6 @@ create_badge() {
 	:
 }
 
-
-
 arc_registry_push() {
 	if [ -z "$arc_registry_endpoint" ] || [ -z "$arc_registry_token" ]; then
 		echo "ARC Registry endpoint or token not configured. Skipping..."
