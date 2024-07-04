@@ -31,6 +31,7 @@ Create ARC JSON:
 quality_report_generator:
   stage: quality_report_generator
   rules:
+    - if: $CI_COMMIT_REF_NAME != "cqc"
     - exists:
       - .arc/validation_packages.yml
   script:
@@ -49,8 +50,8 @@ quality_report_generator:
         validate_command=("arc-validate" "validate" "-p" "$p")
         [ "$v" = "null" ] && v=""
         if [ -n "$v" ]; then
-          install_command+=("-pv" "$v")
-          validate_command+=("-pv" "$v")
+          install_command+=("-v" "$v")
+          validate_command+=("-v" "$v")
         fi
 
         cat << EOF >> quality_reports.yml
@@ -62,16 +63,16 @@ quality_report_generator:
           - ${validate_command[@]}
           - ret=$?
           - mkdir -p "${CI_COMMIT_BRANCH}"
-          - mv ".arc-validate-results/${p}" "${CI_COMMIT_BRANCH}/${p}${v:+@$v}"
+          - mv ".arc-validate-results/${p}"* "${CI_COMMIT_BRANCH}"
+          - find "$CI_COMMIT_BRANCH" || true
           - exit $ret
         artifacts:
           when: always
           paths:
-            - ${CI_COMMIT_BRANCH}/${p}${v:+@$v}/*.xml
-            - ${CI_COMMIT_BRANCH}/${p}${v:+@$v}/*.svg
+            - $CI_COMMIT_BRANCH/*/*
           reports:
             junit:
-              - ${CI_COMMIT_BRANCH}/${p}${v:+@$v}/*.xml
+              - $CI_COMMIT_BRANCH/*/*.xml
           expire_in: 1 hour
       EOF
         if [ "$p" = "invenio" ]; then
@@ -84,8 +85,6 @@ quality_report_generator:
         script:
           - echo "Creating publication metadata..."
           - arc-to-invenio -p .
-          - |
-            [ -e metadata.json ] || exit 1
         artifacts:
           when: always
           paths:

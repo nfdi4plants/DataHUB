@@ -224,23 +224,32 @@ if [ "$event_type" = "pipeline" ]; then
 	
 		tmp_dir="$(mktemp -d)"
 		cd "$tmp_dir"
+		echo "Fetching job (${job_id}) artifacts for project ${project_id}..."
 		job_artifacts_path="${project_id}.${job_id}.artifacts.zip"
-		ret="$(curl -k -L \
+		curl -k -L \
 			-H "PRIVATE-TOKEN: $api_token" \
 			"${CI_API_V4_URL}/projects/${project_id}/jobs/${job_id}/artifacts" \
 			> "$job_artifacts_path"
-		)"
-		echo "Fetching job (${job_id}) artifacts for project ${project_id} returned: $ret"
+		# the following is kinda lazy, TODO better
 		unzip "$job_artifacts_path"
+		if [ "$?" != 0 ]; then
+			# something went wrong with the job, skip
+			echo "Job ${job_id} did not create a valid zip. Skipping."
+			continue
+		fi
 		rm -f "$job_artifacts_path"
-		
-		validation_results=($(find . -type f -name "*.svg" -or -name "*.xml"))
-		for file in "${validation_results[@]}"; do
-	
-			file="${file:2}"
-			file_urlencoded="$(echo -n "$file" | jq -sRr @uri)"
 
-			ret="$(curl -k -L -s -o /dev/null \
+		# detect the name of the validation package through the result folder
+		# it should be: <branch>/<package>@<version>
+		validation_package_results_folder="$(find * -mindepth 1 -type d)"
+		echo "Results: $validation_package_results_folder"
+
+		# we want to upload all the files created by the validation package
+		# in the quality control branch.
+		for file in "${validation_package_results_folder}/"*; do
+			echo "Working on file: $file"
+			file_urlencoded="$(echo -n "$file" | jq -sRr @uri)"
+			ret="$(curl -k -s -o /dev/null \
 				-w %{http_code} \
 				-H "Content-Type: application/json" \
 				-H "PRIVATE-TOKEN: $api_token" \
@@ -262,39 +271,48 @@ if [ "$event_type" = "pipeline" ]; then
 				' <<< "$commit_payload"
 	
 			)"
-			# check for svg suffix and only for the configured branch for badges
-			[ "$file" = "${file%.svg}" ] && continue
-			! ( [ "$event_ref" != "$arc_badges_branch_name" ] || [ "$event_ref" != "master" ] ) && continue
-			
-			badge_name="validation-$(echo -n ${file%%@*} | tr '/' '-')"
-			echo "badge name: $badge_name"
+			# Note: the actual commit is done after iterating over all jobs.
 
-			# TODO determine badge URL depending on the return code of the arc-validate tool and not only
-			# whether the get_publication_link function is defined or not
-			if declare -F "get_publication_link" > /dev/null; then
-				badge_url="$(get_publication_link)"
-			else
+			## Create badge if needed
+			if [ "${file##*/}" = "badge.svg" ] && [ "$event_ref" = "$arc_badges_branch_name" ]; then
+				# we'll use a hardcoded name of the badge here, eventually need to change that in the future
+				file="${validation_package_results_folder}/badge.svg"
+				if [ ! -f "$file" ]; then
+					echo "Badge not found at expected path: $file"
+					continue
+				fi
+
+				badge_name="validation-$(echo -n ${file%%@*} | tr '/' '-')"
+				echo "badge name: $badge_name"
+
+				# Determine the URL for the badge. Defaults to GitLab test report page
 				badge_url="${CI_SERVER_URL}/${project_name}/-/pipelines/${event_id}/test_report"
+				summary_file="${validation_package_results_folder}/validation_summary.json"
+				if [ "$(jq -r .Critical.HasFailures "$summary_file")" = "false" ]; then
+					# Use the publication URL, if it is defined
+					if declare -F get_publication_link > /dev/null; then
+						badge_url="$(get_publication_link)"
+					fi
+				fi
+				ret="$(curl -k -X POST \
+					-H "PRIVATE-TOKEN: $api_token" \
+					-H "Content-Type: application/json" \
+					-d '{
+						"name": "'"${badge_name}"'",
+						"link_url": "'"${badge_url}"'",
+						"image_url": "'"${CI_SERVER_URL}"'/%{project_path}/-/raw/'"${arc_quality_control_branch_name}"'/'"${file_urlencoded}"'?inline=false"
+					}' \
+					"${CI_API_V4_URL}/projects/$project_id/badges"
+				)"
+				echo "Badge creation returned: $ret"
 			fi
-			ret="$(curl -k -L -X POST \
-				-H "PRIVATE-TOKEN: $api_token" \
-				-H "Content-Type: application/json" \
-				-d '{
-					"name": "'"${badge_name}"'",
-					"link_url": "'"${badge_url}"'",
-					"image_url": "'"${CI_SERVER_URL}"'/%{project_path}/-/raw/'"${arc_quality_control_branch_name}"'/'"${file_urlencoded}"'?inline=false"
-				}' \
-				"${CI_API_V4_URL}/projects/$project_id/badges"
-		
-			)"
-			echo "Badge creation returned: $ret"
 		done
 
-		# cleanup artifact dir
+		# cleanup temporary job artifacts directory
 		cd -
 		rm -rf "$tmp_dir"
 	done
-	
+
 	ret="$(curl -k -L -X POST \
 	  -H "PRIVATE-TOKEN: $api_token" \
 	  -H "Content-Type: application/json" \
