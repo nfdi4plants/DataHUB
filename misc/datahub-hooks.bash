@@ -170,11 +170,6 @@ if [ "$event_type" = "pipeline" ]; then
 		exit 1
 	fi
 
-	if [ "$event_ref" = "$arc_badges_branch_name" ] || [ "$event_ref" = "master" ]; then
-		echo "Pushing event to the ARC registry...."
-		arc_registry_push
-	fi
-
 	ret="$(curl -k -L -o /dev/null -s -w "%{http_code}" \
 		-H "Content-Type: application/json" \
 		-H "PRIVATE-TOKEN: $api_token" \
@@ -199,8 +194,12 @@ if [ "$event_type" = "pipeline" ]; then
 		echo "$arc_quality_control_branch_name branch check: $ret"
 	fi
 
-	[ "$event_ref" = "$arc_badges_branch_name" ] && purge_badges
-	[ "$event_ref" = "master" ] && purge_badges
+	if [ "$event_ref" = "$arc_badges_branch_name" ] || [ "$event_ref" = "master" ]; then
+		echo "Cleaning badges..."
+		purge_badges
+		echo "Pushing event to the ARC registry...."
+		arc_registry_push
+	fi
 
 	commit_id="$(jq -r '.commit.id // empty' <<< "$json")"
 	if [ -z "$commit_id" ]; then
