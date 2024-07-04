@@ -69,9 +69,10 @@ purge_badges() {
 
 ## MAIN
 
-# setup logging
+# setup logging & trap to clear uninteresting logfiles, if configured
 declare -rg log_file="/var/log/datahub/${0##*/}.$$.log"
 exec &> "$log_file"
+trap '[ "$?" = "2" ] && rm -f -- "$log_file"' EXIT
 
 # declare global variables
 declare -rg arc_validation_stage_name="arc_validation"
@@ -95,20 +96,6 @@ else
 	echo "DataHUB function file not found at '$datahub_functions'..."
 fi
 
-# Get the event from stdin 
-json="$(cat -)"
-
-event_type="$(jq -r '.object_kind // empty' <<< "$json")"
-event_name="$(jq -r '.event_name // empty' <<< "$json")"
-event_ref="$(jq -r '.object_attributes.ref // empty' <<< "$json")"
-event_id="$(jq -r '.object_attributes.id // empty' <<< "$json")"
-
-if { [ -n "$event_type" ] && [ "$event_type" != "pipeline" ]; } \
-	|| { [ -n "$event_name" ] && [ "$event_name" != "project_create" ]; }; then
-	echo "Ignoring $event_type | $event_name"
-	exit 0
-fi
-
 ## Preliminary checks are complete, let's read the configuration file
 . "$datahub_secrets"
 
@@ -122,13 +109,29 @@ if [ -z "$api_token" ]; then
 	exit 1
 fi
 
-# Handle debug mode
-if [ "$HOOK_DEBUG" = "1" ]; then
+shopt -s extglob
+
+if [ "$HOOK_DEBUG" -ge 1 ]; then
 	set -x
 fi
 
+# Get the event from stdin
+json="$(cat -)"
+
+event_type="$(jq -r '.object_kind // empty' <<< "$json")"
+event_name="$(jq -r '.event_name // empty' <<< "$json")"
+event_ref="$(jq -r '.object_attributes.ref // empty' <<< "$json")"
+event_id="$(jq -r '.object_attributes.id // empty' <<< "$json")"
+
+if { [ -n "$event_type" ] && [ "$event_type" != "pipeline" ]; } \
+	|| { [ -n "$event_name" ] && [ "$event_name" != "project_create" ]; }; then
+	echo "Ignoring $event_type | $event_name"
+	exit 2
+fi
+
+# for event_types the project id is in .project.id
 project_id="$(jq -r '.project.id // empty' <<< "$json")"
-# for the event "project_create" the project id is in .project_id
+# for event_name the project id is in .project_id
 [ -z "$project_id" ] && project_id="$(jq -r '.project_id // empty' <<< "$json")"
 
 project_name="$(jq -r '.project.path_with_namespace // empty' <<< "$json")"
