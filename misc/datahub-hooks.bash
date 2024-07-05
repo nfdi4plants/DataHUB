@@ -215,11 +215,10 @@ if [ "$event_type" = "pipeline" ]; then
 	jq -r '.builds[] | select(.stage=="'"${arc_validation_stage_name}"'") | "\(.name) \(.id)"' <<< "$json"
 	while read -r line; do
 		read -r job_name job_id _ <<< "$line"
-		echo "NAME: $job_name"
-		echo "ID: $job_id"
 		ci_jobs["${job_name#validate-}"]="$job_id"
-		declare -p ci_jobs
 	done < <(jq -r '.builds[] | select(.stage=="'"${arc_validation_stage_name}"'") | "\(.name) \(.id)"' <<< "$json")
+	readonly ci_jobs
+	declare -p ci_jobs
 
 	if [ "${#ci_jobs[@]}" = 0 ]; then
 		echo "Failed to find jobs."
