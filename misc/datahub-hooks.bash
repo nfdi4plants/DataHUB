@@ -19,7 +19,6 @@
 # be printed as part of the commands within the logfile.
 # Be careful who you send this log to avoid credentials leaks!
 
-
 # TODO: idea wrap the curl request to use the standard options
 authenticated_request() {
 	:
@@ -203,12 +202,7 @@ if [ "$event_type" = "pipeline" ]; then
 		exit 1
 	fi
 
-	job_ids=($(jq -r '.builds[] | select(.stage=="'"${arc_validation_stage_name}"'") | .id // empty' <<< "$json"))
-	if [ "${#job_ids[@]}" = 0 ]; then
-		echo "Failed to find job ids."
-		exit 1
-	fi
-
+	# prepare the commit json body
 	commit_payload='
 	{
 	  "branch": "'"$arc_quality_control_branch_name"'",
@@ -216,8 +210,24 @@ if [ "$event_type" = "pipeline" ]; then
 	  "actions": []
 	}'
 
-	for job_id in ${job_ids[@]}; do
-	
+	# parse the job names and their ids
+	declare -A ci_jobs
+	jq -r '.builds[] | select(.stage=="'"${arc_validation_stage_name}"'") | "\(.name) \(.id)"' <<< "$json"
+	while read -r line; do
+		read -r job_name job_id _ <<< "$line"
+		echo "NAME: $job_name"
+		echo "ID: $job_id"
+		ci_jobs["${job_name#validate-}"]="$job_id"
+		declare -p ci_jobs
+	done < <(jq -r '.builds[] | select(.stage=="'"${arc_validation_stage_name}"'") | "\(.name) \(.id)"' <<< "$json")
+
+	if [ "${#ci_jobs[@]}" = 0 ]; then
+		echo "Failed to find jobs."
+		exit 1
+	fi
+
+	for job_name in "${!ci_jobs[@]}"; do
+		job_id="${ci_jobs["$job_name"]}"
 		tmp_dir="$(mktemp -d)"
 		cd "$tmp_dir"
 		echo "Fetching job (${job_id}) artifacts for project ${project_id}..."
@@ -237,8 +247,12 @@ if [ "$event_type" = "pipeline" ]; then
 
 		# detect the name of the validation package through the result folder
 		# it should be: <branch>/<package>@<version>
-		validation_package_results_folder="$(find * -mindepth 1 -type d)"
+		validation_package_results_folder="$(find * -mindepth 1 -type d -name "*$job_name*")"
 		echo "Results: $validation_package_results_folder"
+		if [ ! -d "$validation_package_results_folder" ]; then
+			echo "Failed to find package result directory of $job_name..."
+			continue
+		fi
 
 		# we want to upload all the files created by the validation package
 		# in the quality control branch.
