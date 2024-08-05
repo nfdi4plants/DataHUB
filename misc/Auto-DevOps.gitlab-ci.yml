@@ -23,13 +23,16 @@ Create ARC JSON:
   variables:
     ARC_PATH: .
   script:
-    - /arc-export -p .
-    - ls -la
-    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file arc.json "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/isa_arc_json/0.0.1/arc.json"'
+    - /arc-export -f rocrate-metadata -f isa-json -f summary-markdown -p .
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file arc-isa.json "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/isa_arc_json/0.0.1/arc.json"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file arc-isa.json "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/isa_arc_json/0.0.1/arc-isa.json"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file arc-ro-crate-metadata.json "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/isa_arc_json/0.0.1/arc-ro-crate-metadata.json"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file arc-summary.md "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/isa_arc_json/0.0.1/arc-summary.md"'
   artifacts:
     when: always
     paths:
       - arc.json
+      - arc-summary.md
 
 quality_report_generator:
   stage: quality_report_generator
