@@ -283,7 +283,7 @@ if [ "$event_type" = "pipeline" ]; then
 			# Note: the actual commit is done after iterating over all jobs.
 
 			## Create badge if needed
-			if [ "${file##*/}" = "badge.svg" ] && [ "$event_ref" = "$arc_badges_branch_name" ]; then
+   			if [ "${file##*/}" = "badge.svg" ] && { [ "$event_ref" = "$arc_badges_branch_name" ] || [ "$event_ref" = "master" ]; }; then
 				# we'll use a hardcoded name of the badge here, eventually need to change that in the future
 				file="${validation_package_results_folder}/badge.svg"
 				if [ ! -f "$file" ]; then
