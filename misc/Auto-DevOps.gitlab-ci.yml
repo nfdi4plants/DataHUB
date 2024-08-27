@@ -51,6 +51,29 @@ quality_report_generator:
         - generate_metadata
       EOF
     - |
+      arc_validation_spec="$(yq -r '.arc_specification' ${CI_PROJECT_DIR}/.arc/validation_packages.yml)"
+      if [ -n "$arc_validation_spec" ]; then
+        cat << EOF >> quality_reports.yml
+      validate-arc:
+        stage: arc_validation
+        image: "ghcr.io/nfdi4plants/arc-validate:main"
+        script:
+          - arc-validate validate --specification-version "$arc_validation_spec"
+          - ret=$?
+          - mkdir -p "${CI_COMMIT_BRANCH}"
+          - mv ".arc-validate-results/${p}"* "${CI_COMMIT_BRANCH}"
+          - find "$CI_COMMIT_BRANCH" || true
+          - exit $ret
+        artifacts:
+          when: always
+          paths:
+            - $CI_COMMIT_BRANCH/*/*
+          reports:
+            junit:
+              - $CI_COMMIT_BRANCH/*/*.xml
+          expire_in: 1 hour
+      EOF
+      fi
       while read -r p v ; do
         install_command=("arc-validate" "package" "install" "$p")
         validate_command=("arc-validate" "validate" "-p" "$p")
