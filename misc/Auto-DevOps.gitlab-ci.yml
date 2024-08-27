@@ -42,8 +42,6 @@ quality_report_generator:
       - .arc/validation_packages.yml
   script:
     - env
-    - apt update
-    - apt install -y yq
     - |
       cat << EOF > quality_reports.yml
       stages:
