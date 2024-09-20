@@ -41,7 +41,10 @@ quality_report_generator:
     - exists:
       - .arc/validation_packages.yml
   script:
-    - env
+    - |
+      if [ ! -e "${CI_PROJECT_DIR}/.arc/validation_packages.yml" ]; then
+        exit 0
+      fi
     - |
       cat << EOF > quality_reports.yml
       stages:
