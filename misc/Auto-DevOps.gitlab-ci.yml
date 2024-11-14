@@ -52,7 +52,7 @@ quality_report_generator:
         - generate_metadata
       EOF
     - |
-      arc_validation_spec="$(yq -r '.arc_specification' ${CI_PROJECT_DIR}/.arc/validation_packages.yml)"
+      arc_validation_spec="$(yq -r '.arc_specification // ""' ${CI_PROJECT_DIR}/.arc/validation_packages.yml)"
       if [ -n "$arc_validation_spec" ]; then
         cat << EOF >> quality_reports.yml
       validate-arc:
