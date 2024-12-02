@@ -1,5 +1,5 @@
---- /opt/gitlab/embedded/service/gitlab-rails/app/views/profiles/accounts/show.html.haml	2024-08-14 11:35:05.000000000 +0000
-+++ /opt/gitlab/embedded/service/gitlab-rails/app/views/profiles/accounts/show.html.haml	2024-08-19 10:54:58.134629851 +0000
+--- /opt/gitlab/embedded/service/gitlab-rails/app/views/profiles/accounts/show.html.haml	2024-10-09 13:12:25.000000000 +0000
++++ /opt/gitlab/embedded/service/gitlab-rails/app/views/profiles/accounts/show.html.haml	2024-11-29 10:28:26.044231725 +0000
 @@ -8,32 +8,6 @@
      - c.with_body do
        = s_('Profiles|Some options are unavailable for LDAP accounts')
