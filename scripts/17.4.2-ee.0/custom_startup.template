@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# Define paths for assets
+HEADER_LOGO_PATH="/assets_datahub/DataPLANT_logo_minimal_square_bg_transparent.svg"
+FAVICON_PATH="/assets_datahub/favicon_bg_transparent.png"
+
+# Extract the external URL from GITLAB_OMNIBUS_CONFIG
+EXTERNAL_URL=$(echo "$GITLAB_OMNIBUS_CONFIG" | grep -oP "(?<=external_url ')[^']+")
+
+if [ -z "$EXTERNAL_URL" ]; then
+  echo -e "\033[0;31mError: Could not extract external_url from GITLAB_OMNIBUS_CONFIG.\033[0m"
+  exit 1
+fi
+
+echo -e "\033[0;32mExtracted external URL: $EXTERNAL_URL\033[0m"
+
+# Check if SIGN_OUT_URL is defined
+if [ -z "$SIGN_OUT_URL" ]; then
+  echo -e "\033[0;33mNo SIGN_OUT_URL defined. It will be excluded from settings.\033[0m"
+  SETTINGS_COMMAND="gitlab-rails runner \"ApplicationSetting.current.update!(signup_enabled: false, password_authentication_enabled_for_web: false, home_page_url: '$EXTERNAL_URL/explore'); puts 'Settings updated successfully without sign_out_url.'\""
+else
+  echo -e "\033[0;32mUsing SIGN_OUT_URL: $SIGN_OUT_URL\033[0m"
+  SETTINGS_COMMAND="gitlab-rails runner \"ApplicationSetting.current.update!(signup_enabled: false, password_authentication_enabled_for_web: false, auto_devops_enabled: true, home_page_url: '$EXTERNAL_URL/explore', after_sign_out_path: '$SIGN_OUT_URL'); puts 'Settings updated successfully with sign_out_url.'\""
+fi
+
+# Start GitLab service
+/assets/wrapper > /dev/null 2>&1 &
+
+sleep 50
+
+# Wait for GitLab services to be ready
+while true; do
+  SERVICES=$(gitlab-ctl status)
+  if echo "$SERVICES" | awk '!/run:/ {exit 1}'; then
+    echo "All GitLab services are running and healthy!"
+    break
+  else
+    sleep 5
+  fi
+done
+
+# Array of commands
+COMMANDS=(
+  "$SETTINGS_COMMAND"
+  "gitlab-rails runner \"appearance = Appearance.first_or_initialize; appearance.update!(header_logo: File.open('$HEADER_LOGO_PATH'), favicon: File.open('$FAVICON_PATH')); puts 'Appearance updated successfully.'\""
+)
+
+# Execute commands
+for COMMAND in "${COMMANDS[@]}"; do
+  echo "Running command: $COMMAND"
+  
+  OUTPUT=$(eval "$COMMAND" 2>&1)
+  EXIT_CODE=$?
+  
+  if [ $EXIT_CODE -eq 0 ]; then
+    echo -e "\033[0;32mCommand succeeded:\033[0m"
+    echo "$OUTPUT"
+  else
+    echo -e "\033[0;31mCommand failed. Retrying in 10 seconds:\033[0m"
+    echo "$OUTPUT"
+    sleep 10
+  fi
+done
+
+# Keep the script running if necessary
+wait
