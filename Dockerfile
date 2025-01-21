@@ -1,5 +1,5 @@
 ARG VERSION=latest
-FROM gitlab/gitlab-ee:$VERSION
+FROM gitlab/gitlab-ee:17.4.2-ee.0
 
 # re-set VERSION as its cleared after a FROM directive
 ARG VERSION
