@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-ARG VERSION=latest
-FROM gitlab/gitlab-ee:17.4.2-ee.0
-=======
-ARG VERSION=17.5.3-ee.0
+ARG VERSION=17.4.0-ee.0
 FROM gitlab/gitlab-ee:$VERSION
->>>>>>> 48a1373 (Updating Dockerfile)
 
 # re-set VERSION as its cleared after a FROM directive
 ARG VERSION
