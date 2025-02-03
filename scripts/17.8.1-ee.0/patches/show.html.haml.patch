@@ -1,0 +1,33 @@
+--- /opt/gitlab/embedded/service/gitlab-rails/app/views/profiles/accounts/show.html.haml	2024-11-26 10:15:24.000000000 +0000
++++ /opt/gitlab/embedded/service/gitlab-rails/app/views/profiles/accounts/show.html.haml	2024-12-02 16:09:10.410449747 +0000
+@@ -8,30 +8,6 @@
+     - c.with_body do
+       = s_('Profiles|Some options are unavailable for LDAP accounts')
+ 
+-- if params[:two_factor_auth_enabled_successfully]
+-  = render Pajamas::AlertComponent.new(variant: :success,
+-    alert_options: { class: 'gl-my-5' },
+-    close_button_options: { class: 'js-close-2fa-enabled-success-alert' }) do |c|
+-    - c.with_body do
+-      = html_escape(_('You have set up 2FA for your account! If you lose access to your 2FA device, you can use your recovery codes to access your account. Alternatively, if you upload an SSH key, you can %{anchorOpen}use that key to generate additional recovery codes%{anchorClose}.')) % { anchorOpen: '<a href="%{href}">'.html_safe % { href: help_page_path('user/profile/account/two_factor_authentication_troubleshooting.md', anchor: 'generate-new-recovery-codes-using-ssh') }, anchorClose: '</a>'.html_safe }
+-
+-
+-= render ::Layouts::SettingsSectionComponent.new(s_('Profiles|Two-factor authentication')) do |c|
+-  - c.with_description do
+-    = s_("Profiles|Increase your account's security by enabling two-factor authentication (2FA).")
+-  - c.with_body do
+-    %div
+-      %p
+-        %span.gl-font-bold
+-          #{_('Status')}:
+-        #{current_user.two_factor_enabled? ? _('Enabled') : _('Disabled')}
+-      - if current_user.two_factor_enabled?
+-        = render Pajamas::ButtonComponent.new(variant: :confirm, href: profile_two_factor_auth_path) do
+-          = _('Manage two-factor authentication')
+-      - else
+-        = render Pajamas::ButtonComponent.new(variant: :confirm, href: profile_two_factor_auth_path, button_options: { data: { testid: 'enable-2fa-button' }}) do
+-          = _('Enable two-factor authentication')
+-
+ - if display_providers_on_profile?
+   = render ::Layouts::SettingsSectionComponent.new(s_('Profiles|Service sign-in')) do |c|
+     - c.with_description do
