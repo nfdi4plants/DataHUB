@@ -1,4 +1,4 @@
-ARG VERSION=17.8.1-ee.0
+ARG VERSION=17.5.5-ee.0
 FROM gitlab/gitlab-ee:$VERSION
 
 # re-set VERSION as its cleared after a FROM directive
