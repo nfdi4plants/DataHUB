@@ -32,7 +32,9 @@ Create ARC JSON:
     when: always
     paths:
       - arc.json
+      - arc-isa.json
       - arc-summary.md
+      - arc-ro-crate-metadata.json
 
 quality_report_generator:
   stage: quality_report_generator
