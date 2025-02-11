@@ -4,7 +4,7 @@ This repository contains the Dockerfile and the necessary scripts and patches to
 
 Since the on-premise infrastructures vary greatly, we provide various examples of docker-compose.yml file in this README as a quick start. In case of assistance with more exotic setups, please contact us or write an issue and we will glady provide assistance.
 
-Note that in these examples, the `data` folder in the current directory is used to mount volumes for different aspects of the configuration & the data. For testing, it is enough to use a local folder. For production, it is recommended to use some kind of network storage or use storage volumes of your virtualisation solution as these usually snapshotted/backed up in some way.
+Note that in these examples, the `data` folder in the current directory is used to mount volumes for different aspects of the configuration & the data. For testing, it is enough to use a local folder. For production, it is recommended to use some kind of network storage or use storage volumes of your virtualisation solution as these are usually snapshotted/backed up in some way.
 
 For background information on the concept of the DataHUB see our [poster contribution to the 2023 CoRDI conference](https://doi.org/10.5281/zenodo.10021181), for the data publication workflow in conjunction with InvenioRDM see the IWSG conference paper.
 
@@ -17,8 +17,6 @@ It is important to note here, that the Enterprise Edition of GitLab is free and 
 ## Quick start docker-compose file
 
 ```
-version: '3.9'
-
 services:
   web:
     image: ghcr.io/nfdi4plants/datahub:main
@@ -309,3 +307,30 @@ A job called "quality_report_generator" will be executed, which in turn will exe
 
 **Note:** The validation packages themselves are still a work in progress. Contact us if you need more information about which package would be available for testing.
 
+# DataHUB Update
+
+To upgrade your DataHUB, follow these steps:
+
+1. **Check Your GitLab Version**  
+   Find your current GitLab version in your instance under **Admin Area > Overview**.
+   These GitLab versions correspond to the DataHUB versions.
+
+2. **Determine the Upgrade Path**  
+   Use the [GitLab Upgrade Path](https://gitlab-com.gitlab.io/support/toolbox/upgrade-path/) to identify required intermediate/target versions.
+   
+   Alternatively, you can also follow all upgrades up to the latest one listed [here](https://github.com/nfdi4plants/DataHUB/pkgs/container/datahub/versions?filters%5Bversion_type%5D=tagged).
+   There should be at least one working upgrade path for each version, please let us know if something is missing.
+
+3. **Pull the Matching DataHUB Image**  
+   DataHUB Docker images are tagged with the **exact DataHUB version** they support. Update your compose file with the next available DataHUB version needed in your upgrade path.
+   ```bash
+    services:
+      web:
+        image: ghcr.io/nfdi4plants/datahub:<release>
+   ```  
+   Replace `<release>` with your target GitLab version (e.g., `16.10.1-ee.0`).  
+   Check available versions/tags:  
+   [GitHub Container Registry for DataHUB](https://github.com/nfdi4plants/DataHUB/pkgs/container/datahub).  
+
+4. **Deploy the Upgraded Image**  
+   Follow your existing deployment workflow to apply the new image.

@@ -1,0 +1,11 @@
+--- /opt/gitlab/embedded/service/gitlab-rails/app/views/explore/_head.html.haml	2023-04-04 15:26:37.813601385 +0200
++++ /opt/gitlab/embedded/service/gitlab-rails/app/views/explore/_head.html.haml	2023-04-04 14:03:00.950212922 +0200
+@@ -1,6 +1,6 @@
+ .explore-title.text-center
+   %h2
+-    = _("Explore GitLab")
++    = _("Explore DataPLANT")
+   %p.lead
+-    = _("Discover projects, groups and snippets. Share your projects with others")
++    = _("Discover ARCs, projects and groups. Share and contribute to ARCs with the DataPLANT community.")
+   %br
