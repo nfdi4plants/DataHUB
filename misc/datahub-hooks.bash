@@ -303,6 +303,9 @@ if [ "$event_type" = "pipeline" ]; then
 						badge_url="$(get_publication_link)"
 					fi
 				fi
+				if [ "$badge_name" = "validation-main-odrl" ] && [ -f "${validation_package_results_folder}/offer.pdf" ]; then
+					badge_url="${CI_SERVER_URL}/%{project_path}/-/blob/${arc_quality_control_branch_name}/${validation_package_results_folder}/offer.pdf"
+				fi
 				ret="$(curl -k -X POST \
 					-H "PRIVATE-TOKEN: $api_token" \
 					-H "Content-Type: application/json" \
