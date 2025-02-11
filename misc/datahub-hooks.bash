@@ -297,7 +297,7 @@ if [ "$event_type" = "pipeline" ]; then
 				# Determine the URL for the badge. Defaults to GitLab test report page
 				badge_url="${CI_SERVER_URL}/${project_name}/-/pipelines/${event_id}/test_report"
 				summary_file="${validation_package_results_folder}/validation_summary.json"
-				if [ "$(jq -r .Critical.HasFailures "$summary_file")" = "false" ]; then
+				if [ "$badge_name" = "validation-main-invenio" ] && [ "$(jq -r .Critical.HasFailures "$summary_file")" = "false" ]; then
 					# Use the publication URL, if it is defined
 					if declare -F get_publication_link > /dev/null; then
 						badge_url="$(get_publication_link)"
