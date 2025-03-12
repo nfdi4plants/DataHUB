@@ -1,0 +1,11 @@
+--- /opt/gitlab/embedded/service/gitlab-rails/config/initializers/carrierwave_s3_encryption_headers_patch.rb	2024-07-10 10:16:24.201574831 +0000
++++ /opt/gitlab/embedded/service/gitlab-rails/config/initializers/carrierwave_s3_encryption_headers_patch.rb	2024-07-10 10:16:57.405284779 +0000
+@@ -25,7 +25,7 @@
+           if ::Feature.enabled?(:s3_multithreaded_uploads, type: :ops) && fog_provider == 'AWS'
+             # AWS SDK uses 10 threads by default and a multipart chunk size of 10 MB
+             file.concurrency = 10
+-            file.multipart_chunk_size = 10485760
++            file.multipart_chunk_size = 10485760 / 10 * 1024 # 1 GiB
+             file.copy(@uploader.fog_directory, new_path, copy_to_options)
+           else
+             # Some Fog providers may issue a GET request (https://github.com/fog/fog-google/issues/512)
