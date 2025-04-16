@@ -143,20 +143,26 @@ if [ -z "$project_name" ]; then
 	exit 1
 fi
 
-if [ "$event_name" = "project_create" ]; then
-	ret="$(curl -k -L -X POST \
+check_pipeline_badge() {
+	badge_list="$(curl -k -L \
 		-H "PRIVATE-TOKEN: $api_token" \
-		-H "Content-Type: application/json" \
-		-d '{
-			"name": "pipeline-badge",
-			"link_url": "'"${CI_SERVER_URL}"'/%{project_path}/commits/%{default_branch}",
-			"image_url": "'"${CI_SERVER_URL}"'/%{project_path}/badges/%{default_branch}/pipeline.svg"
-		}' \
-		"${CI_API_V4_URL}/projects/$project_id/badges"
+		"${CI_API_V4_URL}/projects/$project_id/badges" \
+		| jq -r '.[].name // empty'
 	)"
-	echo "pipeline badge creation: $ret"
-
-fi
+	if [ -z "$badge" ]; then
+		ret="$(curl -k -L -X POST \
+			-H "PRIVATE-TOKEN: $api_token" \
+			-H "Content-Type: application/json" \
+			-d '{
+				"name": "pipeline-badge",
+				"link_url": "'"${CI_SERVER_URL}"'/%{project_path}/commits/%{default_branch}",
+				"image_url": "'"${CI_SERVER_URL}"'/%{project_path}/badges/%{default_branch}/pipeline.svg"
+			}' \
+			"${CI_API_V4_URL}/projects/$project_id/badges"
+		)"
+		echo "pipeline bradge creation: $ret"
+	fi
+}
 
 if [ "$event_type" = "pipeline" ]; then
 	pipeline_status="$(jq -r '.object_attributes.status // empty' <<< "$json")"
@@ -164,7 +170,7 @@ if [ "$event_type" = "pipeline" ]; then
 		echo "Pipeline not done yet!"
 		exit 1
 	fi
-
+	check_pipeline_badge
 	ret="$(curl -k -L -o /dev/null -s -w "%{http_code}" \
 		-H "Content-Type: application/json" \
 		-H "PRIVATE-TOKEN: $api_token" \
