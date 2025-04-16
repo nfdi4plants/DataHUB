@@ -144,25 +144,17 @@ if [ -z "$project_name" ]; then
 fi
 
 if [ "$event_name" = "project_create" ]; then
-	# check if we need to create it
-	badge="$(curl -k -L \
+	ret="$(curl -k -L -X POST \
 		-H "PRIVATE-TOKEN: $api_token" \
-		"${CI_API_V4_URL}/projects/$project_id/badges" \
-		| jq -r '.[].name // empty'
-		)"
-	if [ -z "$badge" ]; then
-		ret="$(curl -k -L -X POST \
-			-H "PRIVATE-TOKEN: $api_token" \
-			-H "Content-Type: application/json" \
-			-d '{
-				"name": "pipeline-badge",
-				"link_url": "'"${CI_SERVER_URL}"'/%{project_path}/commits/%{default_branch}",
-				"image_url": "'"${CI_SERVER_URL}"'/%{project_path}/badges/%{default_branch}/pipeline.svg"
-			}' \
-			"${CI_API_V4_URL}/projects/$project_id/badges"
-		)"
-		echo "pipeline branch creation: $ret"
-	fi
+		-H "Content-Type: application/json" \
+		-d '{
+			"name": "pipeline-badge",
+			"link_url": "'"${CI_SERVER_URL}"'/%{project_path}/commits/%{default_branch}",
+			"image_url": "'"${CI_SERVER_URL}"'/%{project_path}/badges/%{default_branch}/pipeline.svg"
+		}' \
+		"${CI_API_V4_URL}/projects/$project_id/badges"
+	)"
+	echo "pipeline badge creation: $ret"
 
 fi
 
