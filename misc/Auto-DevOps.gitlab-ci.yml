@@ -30,7 +30,7 @@ Create ARC JSON:
         [ "$target" = "arc.json" ] && file="arc-isa.json" # hack for arc{,.isa}.json case
         curl --header "JOB-TOKEN: $CI_JOB_TOKEN" \
           --upload-file $file \
-          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/isa_arc_json/0.0.1/$target"
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/isa_arc_json/0.0.1/$target" || true
       done
   artifacts:
     when: always
