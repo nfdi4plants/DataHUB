@@ -3,7 +3,7 @@
 set -ex
 
 for patch in /scripts/patches/*.patch; do
-	echo "Applying $path ..."
+	echo "Applying $patch ..."
 	patch -p0 < "$patch"
 done
 
