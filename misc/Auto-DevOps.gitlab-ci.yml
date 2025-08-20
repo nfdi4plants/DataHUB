@@ -23,7 +23,7 @@ Create ARC JSON:
   variables:
     ARC_PATH: .
   script:
-    - /arc-export -f rocrate-metadata -f isa-json -f summary-markdown -p .
+    - /arc-export -f rocrate-metadata-lfs -f isa-json -f summary-markdown -p .
     - |
       for file in arc.json arc-isa.json arc-ro-crate-metadata.json arc-summary.md; do
         target="$file"
