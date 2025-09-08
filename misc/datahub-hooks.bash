@@ -149,7 +149,7 @@ check_pipeline_badge() {
 		"${CI_API_V4_URL}/projects/$project_id/badges" \
 		| jq -r '.[].name // empty'
 	)"
-	if [ -z "$badge" ]; then
+	if [ -z "$badge_list" ]; then
 		ret="$(curl -k -L -X POST \
 			-H "PRIVATE-TOKEN: $api_token" \
 			-H "Content-Type: application/json" \
