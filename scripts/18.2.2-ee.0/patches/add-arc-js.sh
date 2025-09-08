@@ -7,10 +7,17 @@ set -- /opt/gitlab/embedded/service/gitlab-rails/public/assets/webpack/pages.pro
 # exit if above's glob matches nothing or more than 1 file
 [ -e "$1" ] && [ "$#" = "1" ]
 
-# the mighty "patch"
+# the mighty "patches"
 sed -Ei.bak \
 	's/sample:(\{text:Object\([^)]+\))/arc:\1("ProjectTemplates|ARC"),icon:".template-option .icon-gitlab_logo"},&/' \
 	"$1"
+sed -Ei.bak \
+        's/sample:(\{text:Object\([^)]+\))/arc:\1("ProjectTemplates|Metabolomics ARC"),icon:".template-option .icon-gitlab_logo"},&/' \
+        "$1"
+sed -Ei.bak \
+        's/sample:(\{text:Object\([^)]+\))/arc:\1("ProjectTemplates|Genomics ARC"),icon:".template-option .icon-gitlab_logo"},&/' \
+        "$1"
+
 
 # needs to be gzip'ed too
 gzip -kf "$1"
