@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+#
+# Run it as:
+#   vendor_template https://gitlab.com/pages/hugo hugo "Pages/Hugo template"
+#
+
+## Check which OS the script runs from since gtar/tar behaves differently
+## on macOS and Linux
+if [ "$(uname)" == "Darwin" ]; then
+  GTAR="gtar"
+else
+  GTAR="tar"
+fi
+
+## Check if jq is installed
+hash jq 2>/dev/null || { echo "ERROR: jq is not installed. Install it and run the script again."; exit 1; }  # CHANGED: hard-exit if missing
+
+REPO_URL=$1
+SHORT_NAME=$2
+COMMENT=$3
+FILENAME="$SHORT_NAME.tar.gz"
+
+# Check if the extracted project exists
+if [ ! -f "$FILENAME" ]
+then
+  echo
+  echo "ERROR: $FILENAME doesn't exist. Did you export the project?"
+  exit 1
+fi
+
+# --- NEW: normalize to a plain TAR, handling single or double gzip ---
+rm -rf tar-base project-"$SHORT_NAME"
+mkdir -p "./tar-base"
+
+# First peel
+gzip -dc "$FILENAME" > "./tar-base/_layer1" || {
+  echo "ERROR: $FILENAME is not valid gzip"; exit 1;
+}
+
+# If still gzip (magic 1f 8b 08), peel again; else accept as TAR
+if head -c3 "./tar-base/_layer1" | od -An -t x1 | tr -d ' \n' | grep -qi '^1f8b08$'; then
+  gzip -dc "./tar-base/_layer1" > "./tar-base/base.tar" || {
+    echo "ERROR: Failed to peel second gzip layer"; exit 1;
+  }
+  rm -f "./tar-base/_layer1"
+else
+  mv "./tar-base/_layer1" "./tar-base/base.tar"
+fi
+
+# Show archive contents (now plain tar)
+$GTAR -tf "./tar-base/base.tar"
+
+# Extract required files from the plain tar
+# (try with ./ prefix first, then without)
+$GTAR -xf "./tar-base/base.tar" -C "./tar-base" ./VERSION ./tree/project.json 2>/dev/null \
+  || $GTAR -xf "./tar-base/base.tar" -C "./tar-base" VERSION tree/project.json
+
+git clone "$REPO_URL" "project-$SHORT_NAME"
+cd "project-$SHORT_NAME"
+rm -rf .git
+git init
+git add -A .
+
+# CHANGED: Force BOTH author & committer to neutral identity; ignore globals; disable signing
+GIT_CONFIG_GLOBAL=/dev/null \
+GIT_AUTHOR_NAME="DataPLANT Template" \
+GIT_AUTHOR_EMAIL="templates@dataplant.org" \
+GIT_COMMITTER_NAME="DataPLANT Template" \
+GIT_COMMITTER_EMAIL="templates@dataplant.org" \
+git -c user.name="DataPLANT Template" \
+    -c user.email="templates@dataplant.org" \
+    -c commit.gpgSign=false \
+    commit -m "$COMMENT"
+
+git bundle create project.bundle --all
+mv -f project.bundle ../tar-base/
+cd ../tar-base
+
+# If project.json wasn't where we expected, fall back to the first one we find
+if [ ! -f tree/project.json ]; then
+  PJ="$(find . -maxdepth 3 -type f -name project.json | head -n1)"
+else
+  PJ="tree/project.json"
+fi
+
+cat "$PJ" | jq '.issues = [] | .releases = [] | .merge_requests = [] | .ci_pipelines = [] | .pipeline_schedules = [] | .services = [] | .pipelines = [] | .protected_branches = [] | .project_members = [] | .labels = [] | del(.ci_cd_settings, .external_authorization_classification_label, .project_feature)' -c > project.json
+rm -rf tree
+
+# CHANGED: ensure final tar has EXACTLY these three files; don't include base.tar, etc.
+# Keep the VERSION file from the export untouched (matches your GitLab importer).
+$GTAR -czf "$FILENAME" VERSION project.json project.bundle
+
+cd ..
+
+echo "=> Moving $FILENAME to the vendored templates"
+mkdir -p vendor/project_templates/
+mv tar-base/"$FILENAME" vendor/project_templates/
+
+echo "=> Cleaning up"
+rm -rf tar-base "project-$SHORT_NAME" "$FILENAME"
+
+echo "=> The following files are included in the bundled repo:"
+$GTAR -tzf "vendor/project_templates/$FILENAME"
