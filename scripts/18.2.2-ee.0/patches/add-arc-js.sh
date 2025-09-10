@@ -12,10 +12,10 @@ sed -Ei.bak \
 	's/sample:(\{text:Object\([^)]+\))/arc:\1("ProjectTemplates|ARC"),icon:".template-option .icon-gitlab_logo"},&/' \
 	"$1"
 sed -Ei.bak \
-        's/sample:(\{text:Object\([^)]+\))/arc:\1("ProjectTemplates|Metabolomics ARC"),icon:".template-option .icon-gitlab_logo"},&/' \
+        's/sample:(\{text:Object\([^)]+\))/m-arc:\1("ProjectTemplates|Metabolomics ARC"),icon:".template-option .icon-gitlab_logo"},&/' \
         "$1"
 sed -Ei.bak \
-        's/sample:(\{text:Object\([^)]+\))/arc:\1("ProjectTemplates|Genomics ARC"),icon:".template-option .icon-gitlab_logo"},&/' \
+        's/sample:(\{text:Object\([^)]+\))/g-arc:\1("ProjectTemplates|Genomics ARC"),icon:".template-option .icon-gitlab_logo"},&/' \
         "$1"
 
 
