@@ -231,6 +231,7 @@ To prevent excessive disk consumption on your DataHUB instance, apply the follow
     "max-file": "3"
   }
 }
+```
 Then reload the Docker service:
    ```bash
    sudo systemctl restart docker
