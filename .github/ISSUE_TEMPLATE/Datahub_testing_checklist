@@ -1,0 +1,486 @@
+name: DataHub Testing Checklist
+description: Checklist for testing DataHub features
+title: "DataHub Testing Checklist"
+labels: ["testing", "datahub"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## DataHub Testing Checklist
+        Please go through each section and:
+        1. Select a **status** from the dropdown.
+        2. Add any **comments** or observations in the text box below each item.
+
+  # ----------------------------
+  # Login & Access
+  # ----------------------------
+  - type: markdown
+    attributes:
+      value: "### Login & Access"
+
+  - type: dropdown
+    id: login_create_account
+    attributes:
+      label: Can I create an account and/or log in with my credentials?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: login_create_account_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: login_keycloak
+    attributes:
+      label: sign in via dataplant keycloak account
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: login_keycloak_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: reset_password
+    attributes:
+      label: Can I reset my password if needed?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: reset_password_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: two_factor_auth
+    attributes:
+      label: Can I activate and use Two-Factor Authentication (2FA)?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: two_factor_auth_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  # ----------------------------
+  # Project Creation
+  # ----------------------------
+  - type: markdown
+    attributes:
+      value: "### Project Creation"
+
+  - type: dropdown
+    id: create_project
+    attributes:
+      label: Can I create a new project?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: create_project_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: set_visibility
+    attributes:
+      label: Can I set project visibility (private/public/internal)?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: set_visibility_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: export_import_project
+    attributes:
+      label: Can I export/import a project?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: export_import_project_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: delete_project
+    attributes:
+      label: delete a project
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: delete_project_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  # ----------------------------
+  # Data Upload
+  # ----------------------------
+  - type: markdown
+    attributes:
+      value: "### Data Upload"
+
+  - type: dropdown
+    id: upload_arc_files
+    attributes:
+      label: Can I upload research data files (ARCs)?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: upload_arc_files_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: file_size_limit
+    attributes:
+      label: Is there a file size limit that affects me? (Test LFS for large datasets 1–5 GB)
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: file_size_limit_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: upload_lfs_flagged
+    attributes:
+      label: upload LFS flagged file
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: upload_lfs_flagged_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  # ----------------------------
+  # Collaboration
+  # ----------------------------
+  - type: markdown
+    attributes:
+      value: "### Collaboration"
+
+  - type: dropdown
+    id: invite_collaborators
+    attributes:
+      label: Can I invite collaborators to my project?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: invite_collaborators_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: collaborator_roles
+    attributes:
+      label: Can collaborators with different roles (Developer, Reporter) access correctly?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: collaborator_roles_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  # ----------------------------
+  # Version Control
+  # ----------------------------
+  - type: markdown
+    attributes:
+      value: "### Version Control"
+
+  - type: dropdown
+    id: commit_versions
+    attributes:
+      label: Can I commit new versions of data files?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: commit_versions_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: view_revert_history
+    attributes:
+      label: Can I view version history and revert if needed?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: view_revert_history_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  # ----------------------------
+  # Search & Navigation
+  # ----------------------------
+  - type: markdown
+    attributes:
+      value: "### Search & Navigation"
+
+  - type: dropdown
+    id: search_within_files
+    attributes:
+      label: Can I search within project files? (Monitor repository search speed)
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: search_within_files_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: navigate_repos
+    attributes:
+      label: Can I easily navigate between repositories and groups?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: navigate_repos_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  # ----------------------------
+  # Wiki & Documentation
+  # ----------------------------
+  - type: markdown
+    attributes:
+      value: "### Wiki & Documentation"
+
+  - type: dropdown
+    id: create_wiki
+    attributes:
+      label: Can I create and edit a project Wiki?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: create_wiki_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: format_docs
+    attributes:
+      label: Can I format documentation (Markdown, images, links)?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: format_docs_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  # ----------------------------
+  # Notifications
+  # ----------------------------
+  - type: markdown
+    attributes:
+      value: "### Notifications"
+
+  - type: dropdown
+    id: receive_notifications
+    attributes:
+      label: Do I receive email/web notifications for updates?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: receive_notifications_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: customize_notifications
+    attributes:
+      label: Can I customize notification settings?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: customize_notifications_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  # ----------------------------
+  # Usability & Interface
+  # ----------------------------
+  - type: markdown
+    attributes:
+      value: "### Usability & Interface"
+
+  - type: dropdown
+    id: ui_clarity
+    attributes:
+      label: Is the web interface clear and easy to use?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: ui_clarity_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: mobile_access
+    attributes:
+      label: Can I access GitLab from mobile/tablet browser?
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: mobile_access_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  # ----------------------------
+  # ARC Tools, ARCitect
+  # ----------------------------
+  - type: markdown
+    attributes:
+      value: "### ARC Tools, ARCitect"
+
+  - type: dropdown
+    id: arcitect_sign_in
+    attributes:
+      label: sign-in
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: arcitect_sign_in_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: arcitect_download
+    attributes:
+      label: download ARC
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: arcitect_download_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: arcitect_push
+    attributes:
+      label: push
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: arcitect_push_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: arcitect_add_remote
+    attributes:
+      label: add remote with access token and push
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: arcitect_add_remote_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  # ----------------------------
+  # ARC Tools - ARC Commander
+  # ----------------------------
+  - type: markdown
+    attributes:
+      value: "### ARC Tools – ARC Commander"
+
+  - type: dropdown
+    id: commander_download
+    attributes:
+      label: download (arc get -r)
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: commander_download_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: commander_sync
+    attributes:
+      label: arc sync
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: commander_sync_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: commander_token
+    attributes:
+      label: get access token
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: commander_token_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  # ----------------------------
+  # ARC Validation & Publication
+  # ----------------------------
+  - type: markdown
+    attributes:
+      value: "### ARC Validation & Publication"
+
+  - type: dropdown
+    id: validate_arc
+    attributes:
+      label: validate ARC for invenio submission
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: validate_arc_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  - type: dropdown
+    id: publish_arc
+    attributes:
+      label: publish ARC via dataplant publication service
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: publish_arc_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+  # ----------------------------
+  # CI/CD
+  # ----------------------------
+  - type: markdown
+    attributes:
+      value: "### CI/CD"
+
+  - type: dropdown
+    id: run_ci_cd
+    attributes:
+      label: run a custom CI/CD
+      options: ["Worked as expected", "Has an issue", "Not Tested"]
+  - type: textarea
+    id: run_ci_cd_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
+
+# ----------------------------
+  # Overall Experience
+  # ----------------------------
+  - type: markdown
+    attributes:
+      value: "### Overall Experience"
+
+  - type: dropdown
+    id: recommend_instance
+    attributes:
+      label: Are you satisfied with the performance of the platform?
+      options: ["Satisfied: fast and responsive", "Somewhat satisfied: minor issues", "Not satisfied: significant performance issues", "Not Tested"]
+  - type: textarea
+    id: recommend_instance_comments
+    attributes:
+      label: Comments
+      placeholder: Add notes or observations for this test item
