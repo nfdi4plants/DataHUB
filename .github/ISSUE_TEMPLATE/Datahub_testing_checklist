@@ -13,6 +13,25 @@ body:
         1. Select a **status** from the dropdown.
         2. Add any **comments** or observations in the text box below each item.
 
+- type: dropdown
+    id: os
+    attributes:
+      label: "Operating System"
+      description: "Select the OS you used for testing ARCitect."
+      options:
+        - Windows 11
+        - Windows 10
+        - Windows other
+        - macOS Sequoia
+        - macOS Sonoma
+        - macOS Ventura
+        - macOS other
+        - Ubuntu 24.04 LTS
+        - Ubuntu 22.04 LTS
+        - Linux other
+    validations:
+      required: true
+
   # ----------------------------
   # Login & Access
   # ----------------------------
