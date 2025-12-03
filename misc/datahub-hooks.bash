@@ -65,9 +65,10 @@ purge_badges() {
 ## MAIN
 
 # setup logging & trap to clear uninteresting logfiles, if configured
-declare -rg log_file="/var/log/datahub/${0##*/}.$$.log"
+declare -rg log_file="/var/log/datahub/${0##*/}.$(date +%Y%m%d_%H%M%S).$$.log"
 exec &> "$log_file"
-trap '[ "$?" = "2" ] && rm -f -- "$log_file"' EXIT
+trap 'echo CLEANUP' EXIT
+#trap '[ "$?" = "2" ] && rm -f -- "$log_file"' EXIT
 
 # declare global variables
 declare -rg arc_validation_stage_name="arc_validation"
@@ -164,36 +165,80 @@ check_pipeline_badge() {
 	fi
 }
 
+## The event_type "pipeline" happens on stages' state changes.
 if [ "$event_type" = "pipeline" ]; then
 	pipeline_status="$(jq -r '.object_attributes.status // empty' <<< "$json")"
 	if [ "$pipeline_status" != "manual" ] && [ "$pipeline_status" != "success" ] && [ "$pipeline_status" != "failed" ]; then
 		echo "Pipeline not done yet!"
-		exit 1
+		exit 2
 	fi
 	check_pipeline_badge
-	ret="$(curl -k -L -o /dev/null -s -w "%{http_code}" \
-		-H "Content-Type: application/json" \
-		-H "PRIVATE-TOKEN: $api_token" \
-		"${CI_API_V4_URL}/projects/${project_id}/repository/branches/${arc_quality_control_branch_name}"
-	)"
-	if [ "$ret" == "404" ]; then
+
+	check_branch() {
+		local _branch="$1"
+		ret="$(curl -k -L -o /dev/null -s -w "%{http_code}" \
+			-H "Content-Type: application/json" \
+			-H "PRIVATE-TOKEN: $api_token" \
+			"${CI_API_V4_URL}/projects/${project_id}/repository/branches/${_branch}"
+		)"
+		echo "Branch check of '${_branch}': $ret"
+		[[ "$ret" == "404" ]]
+		return
+	}
+
+	check_or_create_branch() {
+		local _branch="$1"
+		check_branch "$1" || return
+		# branch does not exist, create it
 		echo "branch does not exists, create it"
 		tmp_dir="$(mktemp -d)"
 		cd "$tmp_dir"
 		git init -b "main" .
-		git commit --allow-empty --author "DataHUB CI <ci@datahub>" -m "Quality control branch"
+		git commit --allow-empty --author "DataHUB CI <ci@datahub.org>" -m "Automated branch creation of: $_branch"
 		ret="$(git push \
 			https://oauth:${api_token}@${CI_SERVER_URL##*/}/${project_name} \
-			main:${arc_quality_control_branch_name}
+			main:${_branch}
 		)"
-		echo "$arc_quality_control_branch_name branch creation: $ret"
+		echo "Branch creation of '${_branch}': $ret"
 		cd -
 		rm -rf "$tmp_dir"
-	elif [ "$ret" == "200" ]; then
-		echo "$arc_quality_control_branch_name branch exists."
-	else
-		echo "$arc_quality_control_branch_name branch check: $ret"
-	fi
+	}
+
+	delete_branch() {
+		local _branch="$1"
+		ret="$(curl -k -L -o /dev/null -s -w "%{http_code}" \
+			-X DELETE \
+			-H "PRIVATE-TOKEN: $api_token" \
+			"${CI_API_V4_URL}/projects/${project_id}/repository/branches/${_branch}")"
+		echo "Branch deletion of '${_branch}': $ret"
+		[[ "$ret" == "204" ]]
+		return
+	}
+	# TODO due to the way artifacts are created, there are no conflicts currently
+	# However this might change the future, so it would be better to create a tmp_dir per job.
+	declare -g artifacts_tmp_dir="$(mktemp -d)"
+	extract_job_artifacts() {
+		local _job_id="$1"
+		cd "$artifacts_tmp_dir"
+		echo "Fetching job (${_job_id}) artifacts for project ${project_id}..."
+		job_artifacts_path="${project_id}.${_job_id}.artifacts.zip"
+		curl -k -L \
+			-H "PRIVATE-TOKEN: $api_token" \
+			"${CI_API_V4_URL}/projects/${project_id}/jobs/${_job_id}/artifacts" \
+			> "$job_artifacts_path"
+		# the following is kinda lazy, TODO better
+		unzip "$job_artifacts_path"
+		ls -la
+		if [ "$?" != 0 ]; then
+			# something went wrong with the job, skip
+			echo "Job ${job_id} did not create a valid zip file of artifacts."
+			return 1
+		fi
+		rm -f "$job_artifacts_path"
+	}
+
+
+	check_or_create_branch "${arc_quality_control_branch_name}"
 
 	if [ "$event_ref" = "$arc_badges_branch_name" ] || [ "$event_ref" = "master" ]; then
 		echo "Cleaning badges..."
@@ -201,6 +246,79 @@ if [ "$event_type" = "pipeline" ]; then
 		echo "Pushing event to the ARC registry...."
 		arc_registry_push
 	fi
+
+	## MAIN ARC SUMMARY START
+	arc_sum_job_id="$(jq -r '.builds[] | select(.stage=="arc_summary" and .name=="ARC Summary") | "\(.id)"' <<< "$json")"
+	if [ -n "$arc_sum_job_id" ]; then
+		# Just delete the branch if it exists
+		arc_sum_branch_name="arc-summary"
+		delete_branch "$arc_sum_branch_name"
+		arc_sum_file_path="$(echo -n "README.md" | jq -sRr @uri)"
+		#check_or_create_branch "$arc_sum_branch_name"
+		if extract_job_artifacts "$arc_sum_job_id"; then
+			# Check if file exists.
+			ret="$(curl -k -s -o /dev/null \
+				-w %{http_code} \
+				-H "Content-Type: application/json" \
+				-H "PRIVATE-TOKEN: $api_token" \
+				"${CI_API_V4_URL}/projects/${project_id}/repository/files/README.md"
+			)"
+			file_data="$(cat README.md | base64 -w0)"
+			action="update"
+			if [ "$ret" != 200 ]; then
+				action="create"
+			fi
+				# doesnt exist, create it
+				#arc_sum_commit_payload="$(jq '
+				#	.actions += [{
+				#	  "action": "create",
+				#	  "file_path":"README.md",
+				#	  "encoding": "base64",
+				#	  "content": "'$file_data'"
+				#	}]
+				#	'
+				#)"
+				
+			# Do the commit on the arc-summary branch and create MR
+			arc_sum_commit_payload='
+			{
+				"branch": "'"$arc_sum_branch_name"'",
+				"commit_message": "ARCSummary: automated README.md update.",
+				"start_branch": "main",
+				"actions": [{
+					"action": "'"$action"'",
+					"file_path": "README.md",
+					"encoding": "base64",
+					"content": "'"$file_data"'"
+				}]
+			}
+			'
+			ret="$(curl -k -L -X POST \
+				-H "PRIVATE-TOKEN: $api_token" \
+				-H "Content-Type: application/json" \
+				--data "$arc_sum_commit_payload" \
+				"${CI_API_V4_URL}/projects/${project_id}/repository/commits")"
+
+			echo "$ret"
+			
+			# Create MR
+			ret="$(curl -k -L -X POST \
+				-H "PRIVATE-TOKEN: $api_token" \
+				-H "Content-Type: application/json" \
+				--data '{
+					"source_branch": "'"$arc_sum_branch_name"'",
+					"target_branch": "main",
+					"title": "Automated MR: README.md update",
+					"description": "Automated update of README.md through ARC-Summary."
+				}' \
+				"${CI_API_V4_URL}/projects/${project_id}/merge_requests")"
+			echo "$ret"
+
+
+		fi
+
+	fi
+	## ARC SUMMARY END
 
 	commit_id="$(jq -r '.commit.id // empty' <<< "$json")"
 	if [ -z "$commit_id" ]; then
@@ -216,7 +334,7 @@ if [ "$event_type" = "pipeline" ]; then
 	  "actions": []
 	}'
 
-	# parse the job names and their ids
+	# parse all job names and their ids
 	declare -A ci_jobs
 	jq -r '.builds[] | select(.stage=="'"${arc_validation_stage_name}"'") | "\(.name) \(.id)"' <<< "$json"
 	while read -r line; do
@@ -228,28 +346,18 @@ if [ "$event_type" = "pipeline" ]; then
 
 	if [ "${#ci_jobs[@]}" = 0 ]; then
 		echo "Failed to find jobs."
-		exit 1
+		exit 2
 	fi
 
 	for job_name in "${!ci_jobs[@]}"; do
 		job_id="${ci_jobs["$job_name"]}"
-		tmp_dir="$(mktemp -d)"
-		cd "$tmp_dir"
-		echo "Fetching job (${job_id}) artifacts for project ${project_id}..."
-		job_artifacts_path="${project_id}.${job_id}.artifacts.zip"
-		curl -k -L \
-			-H "PRIVATE-TOKEN: $api_token" \
-			"${CI_API_V4_URL}/projects/${project_id}/jobs/${job_id}/artifacts" \
-			> "$job_artifacts_path"
-		# the following is kinda lazy, TODO better
-		unzip "$job_artifacts_path"
-		if [ "$?" != 0 ]; then
-			# something went wrong with the job, skip
-			echo "Job ${job_id} did not create a valid zip. Skipping."
+
+		if ! extract_job_artifacts "$job_id"; then
+			echo "Job ${job_id} did not create any artifacts... Skipping."
 			continue
 		fi
-		rm -f "$job_artifacts_path"
 
+		## MAIN VALIDATION PACKAGES START
 		# detect the name of the validation package through the result folder
 		# it should be: <branch>/<package>@<version>
 		validation_package_results_folder="$(find * -mindepth 1 -type d -name "*$job_name*")"
@@ -328,7 +436,7 @@ if [ "$event_type" = "pipeline" ]; then
 
 		# cleanup temporary job artifacts directory
 		cd -
-		rm -rf "$tmp_dir"
+		rm -rf "$artifacts_tmp_dir"
 	done
 
 	ret="$(curl -k -L -X POST \
