@@ -261,7 +261,7 @@ if [ "$event_type" = "pipeline" ]; then
 				-w %{http_code} \
 				-H "Content-Type: application/json" \
 				-H "PRIVATE-TOKEN: $api_token" \
-				"${CI_API_V4_URL}/projects/${project_id}/repository/files/README.md"
+				"${CI_API_V4_URL}/projects/${project_id}/repository/files/README.md?ref=main"
 			)"
 			file_data="$(cat README.md | base64 -w0)"
 			action="update"
