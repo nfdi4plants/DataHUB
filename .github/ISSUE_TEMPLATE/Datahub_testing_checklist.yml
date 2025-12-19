@@ -13,7 +13,7 @@ body:
         1. Select a **status** from the dropdown.
         2. Add any **comments** or observations in the text box below each item.
 
-- type: dropdown
+  - type: dropdown
     id: os
     attributes:
       label: "Operating System"
