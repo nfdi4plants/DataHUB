@@ -51,13 +51,14 @@ Follow the setup guide in the [DataHUB GitHub repository](https://github.com/nfd
 
 ## 3. SMTP Configuration for Email Notifications
 
-To send welcome emails and notifications, a **functional email account** from your IT department is required.
+To send welcome emails and notifications, a **functional email account** is required. This account should support automated system emails and allow sending messages to external recipients. University or institutional admins typically obtain such an email account through their IT department or identity management services. Non-university admins can use email services provided by common mail hosting providers (e.g., a mailbox associated with a custom domain or a dedicated “no-reply” address). Ensure that SMTP credentials are available and that the provider allows automated sending.
 
 ### 3.1 Obtain a functional email
 Request an email address from your IT center through your university’s identity management portal.
 
 ### 3.2 Configuration
-SMTP settings can be configured either in the `docker-compose.yml` file or directly in the `gitlab.rb` file.  
+In general, GitLab configuration can be provided either through the docker-compose.yml file or through the main configuration file gitlab.rb located at /etc/gitlab/gitlab.rb in the container. When using gitlab.rb, it must be mounted as a volume in the Docker Compose setup (as  - ./config/gitlab.rb:/etc/gitlab/gitlab.rb:rw ) to ensure that configuration changes persist across container restarts. To avoid conflicting configurations, it is recommended to use only one configuration method.
+SMTP settings can be configured either via the docker-compose.yml file or within gitlab.rb.   
 Below is an example configuration defined in `gitlab.rb`:
 
 ```ruby
@@ -84,7 +85,7 @@ letsencrypt['enable'] = false
 
 ## 4. DNS Requests and Access Restrictions
 
-Request DNS names from your university IT center.
+A publicly reachable DNS name must be configured for the DataHUB instance. Institutional admins usually request DNS entries from their organization’s DNS or network team. Non-university admin can register a domain name through a domain registrar and manage DNS records via the registrar’s control panel or a DNS hosting service. If network access restrictions are required (e.g., limiting access to internal subnets or specific IP ranges), this can be configured using firewall rules or reverse proxy settings provided by the hosting or cloud provider.
 
 - Example:  
   - Test instance → `datahubdev.your-uni.de`  
@@ -119,7 +120,7 @@ In ARCitect → **Services → Add Service**, fill in:
 
 ## 6. HTTPS Setup
 
-If your university provides SSL certificates (e.g., via HARICA):
+For HTTPS support, valid TLS/SSL certificates are required. Institutional users may rely on organizational certificate authorities or centrally provided certificates. Private users are strongly encouraged to use Let’s Encrypt, which provides free, publicly trusted certificates and supports automated issuance and renewal (e.g., via ACME-compatible tools). Commercial certificate providers can also be used if specific compliance or policy requirements apply. Ensure that certificates are renewed regularly and correctly integrated into the web server or reverse proxy used by the DataHUB instance. If your university provides HARICA SSL certificates:
 
 1. Create the directory `/etc/gitlab/ssl/`
 2. Place the certificate and key:
