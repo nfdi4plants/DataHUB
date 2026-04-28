@@ -216,8 +216,8 @@ if [ "$event_type" = "pipeline" ]; then
 	}
 	# TODO due to the way artifacts are created, there are no conflicts currently
 	# However this might change the future, so it would be better to create a tmp_dir per job.
-	declare -g artifacts_tmp_dir="$(mktemp -d)"
 	extract_job_artifacts() {
+		declare -g artifacts_tmp_dir="$(mktemp -d)"
 		local _job_id="$1"
 		cd "$artifacts_tmp_dir"
 		echo "Fetching job (${_job_id}) artifacts for project ${project_id}..."
