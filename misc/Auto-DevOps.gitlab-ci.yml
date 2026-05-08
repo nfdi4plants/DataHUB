@@ -72,6 +72,9 @@ quality_report_generator:
         - generate_metadata
       EOF
     - |
+      if [ "$CI_PIPELINE_SOURCE" == "merge_request_event" ]; then
+        CI_COMMIT_BRANCH="$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+      fi
       arc_validation_spec="$(yq -r '.arc_specification // ""' ${CI_PROJECT_DIR}/.arc/validation_packages.yml)"
       if [ -n "$arc_validation_spec" ]; then
         cat << EOF >> quality_reports.yml
@@ -80,11 +83,13 @@ quality_report_generator:
         image: "ghcr.io/nfdi4plants/arc-validate:main"
         script:
           - arc-validate validate --specification-version "$arc_validation_spec"
-          - ret=$?
+          - ret=\$?
           - mkdir -p "${CI_COMMIT_BRANCH}"
           - mv ".arc-validate-results/${p}"* "${CI_COMMIT_BRANCH}"
           - find "$CI_COMMIT_BRANCH" || true
           - exit $ret
+        rules:
+          - if: \$CI_PIPELINE_SOURCE == "parent_pipeline"
         artifacts:
           when: always
           paths:
@@ -111,11 +116,13 @@ quality_report_generator:
         script:
           - ${install_command[@]}
           - ${validate_command[@]}
-          - ret=$?
+          - ret=\$?
           - mkdir -p "${CI_COMMIT_BRANCH}"
           - mv ".arc-validate-results/${p}"* "${CI_COMMIT_BRANCH}"
           - find "$CI_COMMIT_BRANCH" || true
-          - exit $ret
+          - exit \$ret
+        rules:
+          - if: \$CI_PIPELINE_SOURCE == "parent_pipeline"
         artifacts:
           when: always
           paths:
@@ -135,6 +142,8 @@ quality_report_generator:
         script:
           - echo "Creating publication metadata..."
           - arc-to-invenio -p .
+        rules:
+          - if: \$CI_PIPELINE_SOURCE == "parent_pipeline"
         artifacts:
           when: always
           paths:
