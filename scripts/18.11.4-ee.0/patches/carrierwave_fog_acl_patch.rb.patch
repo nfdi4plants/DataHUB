@@ -1,0 +1,11 @@
+--- /opt/gitlab/embedded/service/gitlab-rails/config/initializers/carrierwave_fog_acl_patch.rb	2026-06-09 11:53:50.937923243 +0000
++++ /opt/gitlab/embedded/service/gitlab-rails/config/initializers/carrierwave_fog_acl_patch.rb	2026-06-09 11:54:52.696883766 +0000
+@@ -74,7 +74,7 @@
+     if ::Feature.enabled?(:s3_multithreaded_uploads, type: :ops) && fog_provider == 'AWS'
+       # rubocop:enable Gitlab/FeatureFlagWithoutActor
+       file.concurrency = 10
+-      file.multipart_chunk_size = 10.megabytes
++      file.multipart_chunk_size = 1024.megabytes
+       file.copy(@uploader.fog_directory, new_path, copy_to_options)
+     else
+       connection.copy_object(@uploader.fog_directory, file.key, @uploader.fog_directory, new_path, copy_to_options)
