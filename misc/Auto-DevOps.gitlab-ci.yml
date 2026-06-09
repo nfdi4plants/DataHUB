@@ -24,7 +24,7 @@ ARC RO-Crate:
   variables:
     ARC_PATH: .
   script:
-    - /arc-export -f rocrate-metadata -f isa-json -f summary-markdown -p .
+    - /arc-export -f rocrate-metadata-lfs -f isa-json -f summary-markdown -p .
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file arc-isa.json "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/isa_arc_json/0.0.1/arc.json"'
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file arc-isa.json "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/isa_arc_json/0.0.1/arc-isa.json"'
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file arc-ro-crate-metadata.json "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/isa_arc_json/0.0.1/arc-ro-crate-metadata.json"'
