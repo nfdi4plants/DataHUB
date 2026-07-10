@@ -132,25 +132,6 @@ quality_report_generator:
               - $CI_COMMIT_BRANCH/*/*.xml
           expire_in: 1 hour
       EOF
-        if [ "$p" = "invenio" ]; then
-          cat << EOF >> quality_reports.yml
-      Publication Metadata:
-        stage: generate_metadata
-        needs:
-          - validate-invenio
-        image: ghcr.io/nfdi4plants/arc-to-invenio:main
-        script:
-          - echo "Creating publication metadata..."
-          - arc-to-invenio -p .
-        rules:
-          - if: \$CI_PIPELINE_SOURCE == "parent_pipeline"
-        artifacts:
-          when: always
-          paths:
-            - metadata.json
-        when: always
-      EOF
-        fi
         cat quality_reports.yml
       done < <(yq -r '.validation_packages[] | "\(.name) \(.version)"' ${CI_PROJECT_DIR}/.arc/validation_packages.yml )
   artifacts:
