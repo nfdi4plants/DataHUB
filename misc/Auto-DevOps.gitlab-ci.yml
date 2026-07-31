@@ -80,7 +80,7 @@ quality_report_generator:
         cat << EOF >> quality_reports.yml
       validate-arc:
         stage: arc_validation
-        image: "ghcr.io/nfdi4plants/arc-validate:main"
+        image: "ghcr.io/nfdi4plants/arc-validate:release"
         script:
           - arc-validate validate --specification-version "$arc_validation_spec"
           - ret=\$?
@@ -112,7 +112,7 @@ quality_report_generator:
         cat << EOF >> quality_reports.yml
       validate-${p}:
         stage: arc_validation
-        image: "ghcr.io/nfdi4plants/arc-validate:main"
+        image: "ghcr.io/nfdi4plants/arc-validate:release"
         script:
           - ${install_command[@]}
           - ${validate_command[@]}
