@@ -7,7 +7,7 @@ workflow:
       when: always
 
 image:
-  name: "ghcr.io/nfdi4plants/arc-validate:main"
+  name: "ghcr.io/nfdi4plants/arc-validate:release"
 
 stages:
   - arc_json
