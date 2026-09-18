@@ -415,7 +415,7 @@ if [ "$event_type" = "pipeline" ]; then
 				echo "CQC: $cqc_endpoint"
 				package_payload="$(jq -r .Payload "$summary_file")"
 				echo "Payload: $payload"
-				if [ "$(jq -r .Critical.HasFailures "$summary_file")" = "false" ]; then
+				if [ "$badge_name" = "validation-main-invenio" ] && [ "$(jq -r .Critical.HasFailures "$summary_file")" = "false" ] ; then
 					# Use the publication URL, if it is defined
 					if declare -F get_publication_link > /dev/null; then
 						badge_url="$(get_publication_link)"
