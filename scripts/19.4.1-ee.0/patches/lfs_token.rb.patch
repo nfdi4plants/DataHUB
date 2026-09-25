@@ -1,0 +1,11 @@
+--- /opt/gitlab/embedded/service/gitlab-rails/lib/gitlab/lfs_token.rb	2023-04-04 15:32:49.679168014 +0200
++++ /opt/gitlab/embedded/service/gitlab-rails/lib/gitlab/lfs_token.rb	2023-04-04 12:52:34.978437027 +0200
+@@ -14,7 +14,7 @@
+ 
+     include LfsTokenHelper
+ 
+-    DEFAULT_EXPIRE_TIME = 7200 # Default value 2 hours
++    DEFAULT_EXPIRE_TIME = 86400 # Default value was 2 hours (=7200)
+ 
+     attr_accessor :actor
+ 
