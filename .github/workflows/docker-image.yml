@@ -2,7 +2,7 @@ name: Create and publish a Docker image
 
 on:
   push:
-    branches: ['main', 'fix/gitlab-19.5.1']
+    branches: ['main']
 
 env:
   REGISTRY: ghcr.io
@@ -36,8 +36,6 @@ jobs:
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: .
-          build-args: |
-            VERSION=19.5.1-ee.0
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
