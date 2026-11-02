@@ -1,0 +1,19 @@
+--- /opt/gitlab/embedded/service/gitlab-rails/lib/object_storage/direct_upload.rb	2024-07-10 10:14:00.134830913 +0000
++++ /opt/gitlab/embedded/service/gitlab-rails/lib/object_storage/direct_upload.rb	2024-08-21 15:01:53.519335954 +0000
+@@ -16,7 +16,7 @@
+   class DirectUpload
+     include Gitlab::Utils::StrongMemoize
+ 
+-    TIMEOUT = 4.hours
++    TIMEOUT = 48.hours
+     EXPIRE_OFFSET = 15.minutes
+ 
+     MAXIMUM_MULTIPART_PARTS = 100
+@@ -133,6 +133,7 @@
+     end
+ 
+     def use_workhorse_s3_client?
++      return false
+       return false unless config.use_iam_profile? || config.consolidated_settings?
+       # The Golang AWS SDK does not support V2 signatures
+       return false unless credentials.fetch(:aws_signature_version, 4).to_i >= 4
