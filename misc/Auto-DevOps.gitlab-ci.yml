@@ -19,7 +19,7 @@ stages:
 ARC RO-Crate:
   stage: arc_json
   image: 
-    name: ghcr.io/nfdi4plants/arc-export:main
+    name: ghcr.io/nfdi4plants/arc-export:release
     entrypoint: [""]
   variables:
     ARC_PATH: .
